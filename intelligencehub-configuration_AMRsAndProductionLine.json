@@ -74,14 +74,7 @@
         "strategy" : {
           "type" : "default"
         },
-        "password" : {
-          "type" : "Encrypted",
-          "value" : {
-            "keyId" : "C9sO9g7Hr2I7WT2V3tguPA==",
-            "iv" : "iW3hSJZx3J7zRq8JIGHiSA==",
-            "ciphertext" : "LOWhQRsDZMo6ya4+S8R0yA=="
-          }
-        }
+        "password" : "password"
       }
     }, {
       "name" : "ProductionLine_OPC_UA",
