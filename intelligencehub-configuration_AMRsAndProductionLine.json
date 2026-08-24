@@ -1,0 +1,1689 @@
+{
+  "productInfo" : {
+    "company" : "HighByte",
+    "product" : "IntelligenceHub",
+    "version" : "4.5.0",
+    "build" : "2026.8.14.399",
+    "stage" : "Release"
+  },
+  "project" : {
+    "version" : 14,
+    "connections" : [ {
+      "name" : "AMRsAndProductionLine_MQTT",
+      "uri" : "mqtt://localhost:1885",
+      "tags" : [ "AMRsAndProductionLine" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "connectionTimeoutSeconds" : 10,
+        "keepAliveSeconds" : 60,
+        "requestTimeoutMS" : 5000,
+        "cleanSession" : true,
+        "ssl" : false,
+        "redundantBrokers" : [ ],
+        "inputDiscovery" : "#",
+        "maxInflight" : 1000,
+        "mcpEnabled" : "enabled",
+        "maxMessagesReceived" : 0
+      }
+    }, {
+      "name" : "Locations_MSSQL",
+      "uri" : "jdbc.sqlserver://52.10.6.4:1433",
+      "tags" : [ "AMRsAndProductionLine" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : { },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "database" : " KnowledgeBase",
+        "username" : "highbyte",
+        "strategy" : {
+          "type" : "default"
+        },
+        "password" : "password"
+      }
+    }, {
+      "name" : "ProductionLine_OPC_UA",
+      "uri" : "opc.tcp://52.10.6.4:49320",
+      "tags" : [ "AMRsAndProductionLine" ],
+      "writes" : {
+        "flattenModeledValues" : false
+      },
+      "writeThrottle" : {
+        "enabled" : false,
+        "maxBatchSizePerTarget" : 1000,
+        "batchDelay" : {
+          "duration" : 20,
+          "units" : "Milliseconds"
+        }
+      },
+      "subscriptions" : {
+        "subscriptionRate" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "storeForward" : {
+        "enabled" : false,
+        "maxEntries" : 100,
+        "waitOnFailureInterval" : {
+          "duration" : 1,
+          "units" : "Seconds"
+        }
+      },
+      "settings" : {
+        "security" : "None",
+        "authentication" : {
+          "type" : "Anonymous"
+        },
+        "connectTimeoutSeconds" : 5,
+        "requestTimeoutMS" : 5000,
+        "maxItemsPerRead" : 512,
+        "maxItemsPerWrite" : 256,
+        "certificateKeyPair" : "app-certificate-private-key",
+        "sessionName" : "",
+        "identifierMode" : "NodeId",
+        "mcpEnabled" : "enabled"
+      }
+    } ],
+    "inputs" : [ {
+      "name" : "Topic",
+      "connection" : "AMRsAndProductionLine_MQTT",
+      "type" : "mqtt",
+      "qualifier" : {
+        "inputType" : "LastPublish",
+        "payloadType" : "json",
+        "qos" : 0,
+        "topic" : "{{this.Topic}}",
+        "includeTopic" : false
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "Topic",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "Weather/Boston",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "Locations",
+      "connection" : "Locations_MSSQL",
+      "type" : "jdbc.sqlserver",
+      "qualifier" : {
+        "type" : "query",
+        "query" : "select top (1) * from Locations where Id > {{this.Id}} and (AltPathNumber = {{this.AltPathNumber}} or AltPathNumber = 0) order by Id"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "inline",
+        "model" : {
+          "name" : "params",
+          "tags" : [ ],
+          "attributes" : [ {
+            "attributeType" : "Internal",
+            "name" : "AltPathNumber",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "{{this.AltPathNumber}}",
+            "internalType" : {
+              "variant" : "String"
+            }
+          }, {
+            "attributeType" : "Internal",
+            "name" : "Id",
+            "nullable" : false,
+            "required" : false,
+            "array" : false,
+            "defaultValue" : "{{this.Id}}",
+            "internalType" : {
+              "variant" : "String"
+            }
+          } ],
+          "modelVersion" : ""
+        }
+      }
+    }, {
+      "name" : "ProductionTransactionExample",
+      "connection" : "Locations_MSSQL",
+      "type" : "jdbc.sqlserver",
+      "qualifier" : {
+        "type" : "query",
+        "query" : "select * from ProductionTransactionExample order by ProductionID"
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "ProductionLine",
+      "connection" : "ProductionLine_OPC_UA",
+      "type" : "opc.tcp",
+      "qualifier" : {
+        "dataType" : "Auto",
+        "type" : "Branch",
+        "identifier" : {
+          "type" : "NodeId",
+          "namespaceIndex" : "2",
+          "identifierType" : "String",
+          "value" : "ProductionLine"
+        }
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "ProductionLine_PLC_1",
+      "connection" : "ProductionLine_OPC_UA",
+      "type" : "opc.tcp",
+      "qualifier" : {
+        "type" : "Branch",
+        "identifier" : {
+          "type" : "NodeId",
+          "namespaceIndex" : "2",
+          "identifierType" : "String",
+          "value" : "ProductionLine.PLC_1"
+        },
+        "cacheInterval" : {
+          "duration" : 1,
+          "units" : "Hours"
+        },
+        "maxDepth" : 1,
+        "browseVariableNodes" : false,
+        "ignoreBadQuality" : false,
+        "isComplex" : true
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    }, {
+      "name" : "ProductionLine_PLC_1_Humidity",
+      "connection" : "ProductionLine_OPC_UA",
+      "type" : "opc.tcp",
+      "qualifier" : {
+        "type" : "Tag",
+        "identifier" : {
+          "type" : "NodeId",
+          "namespaceIndex" : "2",
+          "identifierType" : "String",
+          "value" : "ProductionLine.PLC_1.Humidity"
+        },
+        "samplingInterval" : {
+          "duration" : 0,
+          "units" : "Seconds"
+        },
+        "isComplex" : true
+      },
+      "cacheLifetime" : {
+        "enabled" : false
+      },
+      "template" : {
+        "type" : "Off"
+      },
+      "referenceMap" : [ ],
+      "parameters" : {
+        "type" : "EmptyParameters"
+      }
+    } ],
+    "outputs" : [ ],
+    "modeling" : {
+      "models" : [ {
+        "name" : "Locations",
+        "tags" : [ "AMRsAndProductionLine" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "Login",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Modeled",
+          "name" : "Locations",
+          "nullable" : false,
+          "required" : false,
+          "array" : true,
+          "model" : "LocationsDetail"
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "LocationsDetail",
+        "tags" : [ "AMRsAndProductionLine" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "Timestamp",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "SectorId",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "X",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Int64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "Y",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Int64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "Z",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Int64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "Interval",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "UInt64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "Battery",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "UInt64"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "IsMoving",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : true,
+          "internalType" : {
+            "variant" : "Boolean"
+          }
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "SensorData",
+        "tags" : [ "AMRsAndProductionLine" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "Login",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Modeled",
+          "name" : "SensorData",
+          "nullable" : false,
+          "required" : false,
+          "array" : true,
+          "model" : "SensorDataDetail"
+        } ],
+        "modelVersion" : ""
+      }, {
+        "name" : "SensorDataDetail",
+        "tags" : [ "AMRsAndProductionLine" ],
+        "attributes" : [ {
+          "attributeType" : "Internal",
+          "name" : "Timestamp",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "Any"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "Quantity",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "Value",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "Unit",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "DataType",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "internalType" : {
+            "variant" : "String"
+          }
+        }, {
+          "attributeType" : "Internal",
+          "name" : "ValueOK",
+          "nullable" : false,
+          "required" : false,
+          "array" : false,
+          "defaultValue" : true,
+          "internalType" : {
+            "variant" : "Boolean"
+          }
+        } ],
+        "modelVersion" : ""
+      } ],
+      "instances" : [ {
+        "name" : "Locations_Instance",
+        "tags" : [ "AMRsAndProductionLine" ],
+        "model" : "Locations",
+        "rootValueAs" : "Object",
+        "template" : {
+          "type" : "Off"
+        },
+        "executeMode" : "V4",
+        "initExpression" : "",
+        "attributes" : [ {
+          "name" : "Login",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Empty"
+            }
+          }
+        }, {
+          "name" : "Locations",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".Locations",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "AMRsAndProductionLine_MQTT"
+            }
+          },
+          "attributes" : [ {
+            "name" : "Timestamp",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "SectorId",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "X",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Y",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Z",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Interval",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Battery",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "IsMoving",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          } ]
+        } ],
+        "parameters" : {
+          "type" : "inline",
+          "model" : {
+            "name" : "params",
+            "tags" : [ ],
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "Topic",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "defaultValue" : "Site1/AMRs/AMR1",
+              "internalType" : {
+                "variant" : "String"
+              }
+            } ],
+            "modelVersion" : ""
+          }
+        }
+      }, {
+        "name" : "SensorData_Instance",
+        "tags" : [ "AMRsAndProductionLine" ],
+        "model" : "SensorData",
+        "rootValueAs" : "Object",
+        "template" : {
+          "type" : "Off"
+        },
+        "executeMode" : "V4",
+        "initExpression" : "",
+        "attributes" : [ {
+          "name" : "Login",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Empty"
+            }
+          }
+        }, {
+          "name" : "SensorData",
+          "expression" : {
+            "type" : "Reference",
+            "reference" : {
+              "type" : "Input",
+              "name" : "Topic",
+              "path" : ".SensorData",
+              "params" : {
+                "Topic" : "{{this.Topic}}"
+              },
+              "connectionName" : "AMRsAndProductionLine_MQTT"
+            }
+          },
+          "attributes" : [ {
+            "name" : "Timestamp",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Quantity",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Value",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "Unit",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "DataType",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          }, {
+            "name" : "ValueOK",
+            "expression" : {
+              "type" : "Reference",
+              "reference" : {
+                "type" : "Empty"
+              }
+            }
+          } ]
+        } ],
+        "parameters" : {
+          "type" : "inline",
+          "model" : {
+            "name" : "params",
+            "tags" : [ ],
+            "attributes" : [ {
+              "attributeType" : "Internal",
+              "name" : "Topic",
+              "nullable" : false,
+              "required" : false,
+              "array" : false,
+              "defaultValue" : "Site1/ProductionLine/PLC_1",
+              "internalType" : {
+                "variant" : "String"
+              }
+            } ],
+            "modelVersion" : ""
+          }
+        }
+      } ]
+    },
+    "conditions" : [ ],
+    "functions" : [ ],
+    "tags" : [ {
+      "name" : "AMRsAndProductionLine"
+    } ],
+    "pipelines" : [ {
+      "name" : "Site1AMR1",
+      "tags" : [ "AMRsAndProductionLine" ],
+      "inputStages" : [ "setMetadata" ],
+      "stages" : [ {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 3690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.AMRsAndProductionLine_MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "Site1/AMRs/{{event.metadata.login}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "type" : "Tag"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "setMetadata",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// login\r\nstage.setMetadata(\"login\", \"AMR1\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "GetLocations" ]
+      }, {
+        "name" : "Locations",
+        "display" : {
+          "position" : {
+            "x" : 3240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "Locations",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Login",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            }
+          }, {
+            "name" : "Locations",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value"
+            },
+            "attributes" : [ {
+              "name" : "Timestamp",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "SectorId",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "X",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Y",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Z",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Interval",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Battery",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "IsMoving",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "GetLocations",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "Locations",
+            "path" : "",
+            "params" : {
+              "AltPathNumber" : "{{event.metadata.altPathNumber}}",
+              "Id" : "{{event.metadata.id}}"
+            },
+            "connectionName" : "Locations_MSSQL"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1950,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "EachLocation" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "Locations" ]
+      }, {
+        "name" : "LocationsDetail",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "LocationsDetail",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Timestamp",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return Date.now()"
+            }
+          }, {
+            "name" : "SectorId",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return 1"
+            }
+          }, {
+            "name" : "X",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return ((event.value.X + (4*Math.random()-2)) * 1000) + parseInt(139000, 10)"
+            }
+          }, {
+            "name" : "Y",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return ((event.value.Y + (4*Math.random()-2)) * 1000) + parseInt(188000, 10)"
+            }
+          }, {
+            "name" : "Z",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return 0"
+            }
+          }, {
+            "name" : "Interval",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return 1"
+            }
+          }, {
+            "name" : "Battery",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.metadata.battery"
+            }
+          }, {
+            "name" : "IsMoving",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return true"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "EachLocation",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".BreakupConfig",
+          "breakupType" : "array",
+          "depth" : 1
+        },
+        "outputs" : [ "LocationsLastId" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "LocationsLastId",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "state.pipeline.set(\"lastId\", event.value.Id);\r\n\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LocationsDetail" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
+          "interval" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          },
+          "mode" : "continuous"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "Site1AMR2",
+      "tags" : [ "AMRsAndProductionLine" ],
+      "inputStages" : [ "setMetadata" ],
+      "stages" : [ {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 3690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.AMRsAndProductionLine_MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "Site1/AMRs/{{event.metadata.login}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "type" : "Tag"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "setMetadata",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "function randomExponential(lambda) {\r\n  return -Math.log(1 - Math.random()) / lambda;\r\n}\r\n\r\n// id and altPathNumber\r\nlet id = state.pipeline.get(\"lastId\", 0);\r\n\r\n// if id == 0\r\nif (id <= 0)\r\n{\r\n  state.pipeline.set(\"lastId\", id);\r\n  state.pipeline.set(\"altPathNumber\", 0);\r\n}\r\nlet altPathNumber = state.pipeline.get(\"altPathNumber\");\r\nid++;\r\nif (id >= 780)\r\n{\r\n  id = 1\r\n  let altPathProb = Math.random();\r\n  altPathNumber = 0\r\n  if (altPathProb >= 0.8) \r\n  {\r\n    altPathNumber = 2\r\n  }\r\n  else if (altPathProb >= 0.5)\r\n  {\r\n    altPathNumber = 1\r\n  }\r\n  state.pipeline.set(\"altPathNumber\", altPathNumber);\r\n}\r\nstage.setMetadata(\"altPathNumber\", altPathNumber);\r\nstage.setMetadata(\"id\", id);\r\n// battery\r\nlet battery = state.pipeline.get(\"battery\", 100);\r\nbattery = battery - randomExponential(1)\r\nif (battery < 1)\r\n{\r\n  battery = 100\r\n}\r\nstage.setMetadata(\"battery\", battery);\r\nstate.pipeline.set(\"battery\", battery);\r\n// login\r\nstage.setMetadata(\"login\", \"AMR2\");\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "GetLocations" ]
+      }, {
+        "name" : "Locations",
+        "display" : {
+          "position" : {
+            "x" : 3240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "Locations",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Login",
+            "expression" : {
+              "type" : "PipelineStageReference",
+              "stageReference" : ""
+            }
+          }, {
+            "name" : "Locations",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value"
+            },
+            "attributes" : [ {
+              "name" : "Timestamp",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "SectorId",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "X",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Y",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Z",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Interval",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Battery",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "IsMoving",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "GetLocations",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReadConfig",
+          "failureOutputs" : [ ],
+          "reference" : {
+            "type" : "Input",
+            "name" : "Locations",
+            "path" : "",
+            "params" : {
+              "AltPathNumber" : "{{event.metadata.altPathNumber}}",
+              "Id" : "{{event.metadata.id}}"
+            },
+            "connectionName" : "Locations_MSSQL"
+          },
+          "handleGoodNoData" : false,
+          "goodNoDataOutputs" : [ ]
+        },
+        "outputs" : [ "ForEach" ]
+      }, {
+        "name" : "ForEach",
+        "display" : {
+          "position" : {
+            "x" : 1140,
+            "y" : -150
+          },
+          "size" : {
+            "width" : 1950,
+            "height" : 390
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "EachLocation" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "Locations" ]
+      }, {
+        "name" : "LocationsDetail",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "LocationsDetail",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Timestamp",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return Date.now()"
+            }
+          }, {
+            "name" : "SectorId",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return 1"
+            }
+          }, {
+            "name" : "X",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return ((event.value.X + (4*Math.random()-2)) * 1000) + parseInt(139000, 10)"
+            }
+          }, {
+            "name" : "Y",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return ((event.value.Y + (4*Math.random()-2)) * 1000) + parseInt(188000, 10)"
+            }
+          }, {
+            "name" : "Z",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return 0"
+            }
+          }, {
+            "name" : "Interval",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return 1"
+            }
+          }, {
+            "name" : "Battery",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.metadata.battery"
+            }
+          }, {
+            "name" : "IsMoving",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return true"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "Return" ]
+      }, {
+        "name" : "EachLocation",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".BreakupConfig",
+          "breakupType" : "array",
+          "depth" : 1
+        },
+        "outputs" : [ "LocationsLastId" ]
+      }, {
+        "name" : "Return",
+        "display" : {
+          "position" : {
+            "x" : 1500,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "LocationsLastId",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEach"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "state.pipeline.set(\"lastId\", event.value.Id);\r\n\r\nstage.setValue(event.value);"
+        },
+        "outputs" : [ "LocationsDetail" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "PolledTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerPolled",
+          "enabled" : true,
+          "interval" : {
+            "duration" : 1,
+            "units" : "Seconds"
+          },
+          "mode" : "continuous"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    }, {
+      "name" : "Site1ProductionLine",
+      "tags" : [ "AMRsAndProductionLine" ],
+      "inputStages" : [ "PLCsObjToArray" ],
+      "stages" : [ {
+        "name" : "PLCsObjToArray",
+        "display" : {
+          "position" : {
+            "x" : 240,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$spread(event.value)"
+        },
+        "outputs" : [ "ForEachPLC" ]
+      }, {
+        "name" : "ForEachPLC",
+        "display" : {
+          "position" : {
+            "x" : 690,
+            "y" : -300
+          },
+          "size" : {
+            "width" : 3600,
+            "height" : 690
+          },
+          "metadata" : { }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SetPLC" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SensorDatasObjToArray",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 300
+          },
+          "metadata" : {
+            "parent" : "ForEachPLC"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JSONataTransformConfig",
+          "transformExpression" : "$spread(event.value)"
+        },
+        "outputs" : [ "ForEachSensor" ]
+      }, {
+        "name" : "ForEachSensor",
+        "display" : {
+          "position" : {
+            "x" : 1050,
+            "y" : 150
+          },
+          "size" : {
+            "width" : 1050,
+            "height" : 390
+          },
+          "metadata" : {
+            "parent" : "ForEachPLC"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ForEachLoopConfig",
+          "failureOutputs" : [ ],
+          "loopOutputs" : [ "SensorDataDetail" ],
+          "stageTimeout" : {
+            "duration" : 30,
+            "units" : "Seconds"
+          }
+        },
+        "outputs" : [ "SensorData" ]
+      }, {
+        "name" : "MQTT",
+        "display" : {
+          "position" : {
+            "x" : 2700,
+            "y" : 300
+          },
+          "metadata" : {
+            "parent" : "ForEachPLC"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".DynamicWriteConfig",
+          "failureOutputs" : [ ],
+          "connectionReference" : "{{Connection.AMRsAndProductionLine_MQTT}}",
+          "eventPath" : "",
+          "connectionType" : "mqtt",
+          "qualifier" : {
+            "topic" : "Site1/ProductionLine/{{event.metadata.PLC}}",
+            "qos" : 0,
+            "namedRoot" : false,
+            "retained" : true,
+            "breakupArrays" : false,
+            "type" : "Tag"
+          },
+          "qualifierExpression" : "",
+          "writeReturn" : "completion"
+        },
+        "outputs" : [ "ReturnPLC" ]
+      }, {
+        "name" : "SensorData",
+        "display" : {
+          "position" : {
+            "x" : 2250,
+            "y" : 300
+          },
+          "metadata" : {
+            "parent" : "ForEachPLC"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "SensorData",
+          "objectName" : "",
+          "initExpression" : "",
+          "attributes" : [ {
+            "name" : "Login",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : ""
+            }
+          }, {
+            "name" : "SensorData",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return event.value"
+            },
+            "attributes" : [ {
+              "name" : "Timestamp",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Quantity",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Value",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "Unit",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "DataType",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            }, {
+              "name" : "ValueOK",
+              "expression" : {
+                "type" : "JavaScript",
+                "expression" : ""
+              }
+            } ]
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "MQTT" ]
+      }, {
+        "name" : "SetPLC",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 300
+          },
+          "metadata" : {
+            "parent" : "ForEachPLC"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".JavaScriptTransformConfig",
+          "transformExpression" : "const plc = Object.keys(event.value)[0];\r\nstage.setMetadata(\"PLC\", plc);\r\nstage.setValue(event.value[plc]);"
+        },
+        "outputs" : [ "SensorDatasObjToArray" ]
+      }, {
+        "name" : "ReturnPLC",
+        "display" : {
+          "position" : {
+            "x" : 3150,
+            "y" : 300
+          },
+          "metadata" : {
+            "parent" : "ForEachPLC"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "ReturnSensorData",
+        "display" : {
+          "position" : {
+            "x" : 600,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachSensor"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ReturnConfig"
+        },
+        "outputs" : [ ]
+      }, {
+        "name" : "SensorDataDetail",
+        "display" : {
+          "position" : {
+            "x" : 150,
+            "y" : 150
+          },
+          "metadata" : {
+            "parent" : "ForEachSensor"
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".ModelConfig",
+          "model" : "SensorDataDetail",
+          "objectName" : "",
+          "initExpression" : "variables.KeyName = Object.keys(event.value)[0];",
+          "attributes" : [ {
+            "name" : "Timestamp",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return Date.now()"
+            }
+          }, {
+            "name" : "Quantity",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return variables.KeyName;"
+            }
+          }, {
+            "name" : "Value",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "if (variables.KeyName == \"Temperature\")\r\n{\r\n    return Math.floor(event.value[variables.KeyName]);\r\n}\r\nelse\r\n{\r\n    return event.value[variables.KeyName];\r\n}\r\n"
+            }
+          }, {
+            "name" : "Unit",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "if (variables.KeyName == \"Pressure\")\r\n{\r\n    return \"Pa\";\r\n}\r\nelse if (variables.KeyName == \"Temperature\")\r\n{\r\n    return \"°C\";\r\n}\r\nelse \r\n{\r\n    return \"Ea\";\r\n}\r\n"
+            }
+          }, {
+            "name" : "DataType",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "if (variables.KeyName == \"Pressure\")\r\n{\r\n    return \"Double\";\r\n}\r\nelse if (variables.KeyName == \"Temperature\")\r\n{\r\n    return \"Int32\";\r\n}\r\nelse\r\n{\r\n    return \"String\";\r\n}\r\n\r\n"
+            }
+          }, {
+            "name" : "ValueOK",
+            "expression" : {
+              "type" : "JavaScript",
+              "expression" : "return true"
+            }
+          } ],
+          "expandArray" : false
+        },
+        "outputs" : [ "ReturnSensorData" ]
+      } ],
+      "trackActivity" : false,
+      "queueSize" : 10000,
+      "triggers" : [ {
+        "name" : "EventTrigger",
+        "display" : {
+          "position" : {
+            "x" : -450,
+            "y" : 0
+          }
+        },
+        "description" : "",
+        "config" : {
+          "type" : ".TriggerEvent",
+          "enabled" : true,
+          "reference" : {
+            "type" : "Input",
+            "name" : "ProductionLine",
+            "path" : "",
+            "params" : { },
+            "connectionName" : "ProductionLine_OPC_UA"
+          },
+          "outputMode" : "COMPRESSED"
+        }
+      } ],
+      "errorHandler" : {
+        "type" : "default"
+      }
+    } ],
+    "namespace" : [ ],
+    "lookupMap" : [ ],
+    "servers" : {
+      "i3x" : {
+        "historyReadPipeline" : {
+          "type" : "Empty"
+        },
+        "writePipeline" : {
+          "type" : "Empty"
+        }
+      }
+    }
+  },
+  "network" : {
+    "groups" : [ ],
+    "hubs" : [ ]
+  }
+}
