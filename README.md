@@ -4,6 +4,8 @@ A Windows desktop app (WPF, .NET 8) that connects to an [i3X](https://github.com
 
 Built for tracking things like AMRs (autonomous mobile robots) that report `{ Timestamp, X, Y, Z, SectorId, Battery, IsMoving }` readings under a `Locations` array.
 
+See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this app was designed and built in.
+
 ---
 
 ## Features
@@ -53,6 +55,12 @@ The whole window — connection panel, buttons, combo box (including its dropdow
 
 - Windows with .NET 8 SDK (or the .NET 8 Desktop Runtime to just run a published build).
 - An i3X server reachable over HTTP(S) (tested against a local HighByte Intelligence Hub instance at `http://localhost:8885/i3x/v1`).
+
+## Demo i3X server config
+
+[`intelligencehub-configuration_AMRsAndProductionLine.json`](intelligencehub-configuration_AMRsAndProductionLine.json) is an exported **HighByte Intelligence Hub 4.5** project configuration. Importing it into a HighByte Intelligence Hub instance stands up an i3X server that simulates live AMR `Locations` data (plus a production-line demo) — a quick way to have something for this app to connect to and track without a real AMR fleet.
+
+> **Note:** this file contains a plaintext database credential and an internal server IP for the demo environment it was exported from. Treat it as sensitive if you didn't intend for it to be public.
 
 ## Build & run
 
@@ -124,4 +132,3 @@ Objects of type `Locations` are expected to expose a current value shaped like:
 - The DPAPI-encrypted token is tied to the current Windows user account and machine — copying `settings.json` elsewhere won't restore a usable token there.
 - The 10-minute rolling trajectory window and the color palette (8 colors, cycling) are hardcoded in `TrackedObject.cs` / `MainViewModel.cs` if you want to tune them.
 - If the i3X server enforces auth on some endpoints but not others (as some demo servers do), `Connect`/`Discover` may succeed while `Start Tracking` fails with 401 — check the auth scheme/token if that happens.
-"# i3XLocationTracker" 
