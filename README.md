@@ -8,6 +8,8 @@ Built with Claude Code; the [i3x-mcp](https://www.npmjs.com/package/i3x-mcp) MCP
 
 See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this app was designed and built in.
 
+![i3X Locations Tracker tracking two AMRs live](screenshot.png)
+
 ---
 
 ## Features
