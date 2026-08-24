@@ -4,3 +4,6 @@
 *.jpg binary
 *.jpeg binary
 *.ico binary
+*.dll binary
+*.exe binary
+*.pdb binary
