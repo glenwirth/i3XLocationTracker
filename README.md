@@ -124,3 +124,4 @@ Objects of type `Locations` are expected to expose a current value shaped like:
 - The DPAPI-encrypted token is tied to the current Windows user account and machine — copying `settings.json` elsewhere won't restore a usable token there.
 - The 10-minute rolling trajectory window and the color palette (8 colors, cycling) are hardcoded in `TrackedObject.cs` / `MainViewModel.cs` if you want to tune them.
 - If the i3X server enforces auth on some endpoints but not others (as some demo servers do), `Connect`/`Discover` may succeed while `Start Tracking` fails with 401 — check the auth scheme/token if that happens.
+"# i3XLocationTracker" 
