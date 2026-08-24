@@ -4,6 +4,8 @@ A Windows desktop app (WPF, .NET 8) that connects to an [i3X](https://github.com
 
 Built for tracking things like AMRs (autonomous mobile robots) that report `{ Timestamp, X, Y, Z, SectorId, Battery, IsMoving }` readings under a `Locations` array.
 
+Built with Claude Code; the [i3x-mcp](https://www.npmjs.com/package/i3x-mcp) MCP server was used during development for Claude to explore the live i3X server's object catalog and capabilities.
+
 See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this app was designed and built in.
 
 ---
