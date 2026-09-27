@@ -2,9 +2,9 @@
   "productInfo" : {
     "company" : "HighByte",
     "product" : "IntelligenceHub",
-    "version" : "4.5.1",
-    "build" : "2026.8.31.1",
-    "stage" : "Release"
+    "version" : "development.build",
+    "build" : "Not Set",
+    "stage" : "Dev"
   },
   "project" : {
     "version" : 15,
@@ -1856,7 +1856,7 @@
             "name" : "Locations",
             "path" : "",
             "params" : { },
-            "connectionName" : "i3x"
+            "connectionName" : "i3X"
           },
           "outputMode" : "ALL"
         }
@@ -1902,7 +1902,7 @@
             "name" : "SensorData",
             "path" : "",
             "params" : { },
-            "connectionName" : "i3x"
+            "connectionName" : "i3X"
           },
           "outputMode" : "ALL"
         }
