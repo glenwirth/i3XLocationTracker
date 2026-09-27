@@ -62,7 +62,7 @@ The whole window — connection panel, buttons, combo box (including its dropdow
 
 ## Demo i3X server config
 
-[`intelligencehub-configuration_AMRsAndProductionLine.json`](intelligencehub-configuration_AMRsAndProductionLine.json) is an exported **HighByte Intelligence Hub 4.5** project configuration. Importing it into a HighByte Intelligence Hub instance stands up an i3X server that simulates live AMR `Locations` data (plus a production-line demo) — a quick way to have something for this app to connect to and track without a real AMR fleet.
+[`intelligencehub-deployment_i3XLocationTracker.json`](https://github.com/glenwirth/HighBytePublic/blob/main/intelligencehub-deployment_i3XLocationTracker.json) is an exported **HighByte Intelligence Hub 4.5** project configuration, hosted in the [HighBytePublic](https://github.com/glenwirth/HighBytePublic) repo. Importing it into a HighByte Intelligence Hub instance stands up an i3X server that simulates live AMR `Locations` data (plus a production-line demo) — a quick way to have something for this app to connect to and track without a real AMR fleet.
 
 > **Note:** this file contains a plaintext database credential and an internal server IP for the demo environment it was exported from. Treat it as sensitive if you didn't intend for it to be public.
 
