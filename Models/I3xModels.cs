@@ -53,6 +53,41 @@ public sealed class ValueResultDetail
     [JsonPropertyName("timestamp")] public string? Timestamp { get; set; }
 }
 
+// ----- PUT /objects/value (write current value) -----
+
+public sealed class WriteValueRequest
+{
+    [JsonPropertyName("updates")] public List<WriteValueUpdate> Updates { get; set; } = new();
+}
+
+public sealed class WriteValueUpdate
+{
+    [JsonPropertyName("elementId")] public string ElementId { get; set; } = "";
+    [JsonPropertyName("value")] public WriteVqt Value { get; set; } = new();
+}
+
+/// <summary>Value / quality / timestamp, as the i3X write API expects.</summary>
+public sealed class WriteVqt
+{
+    [JsonPropertyName("value")] public JsonElement Value { get; set; }
+    [JsonPropertyName("quality")] public string? Quality { get; set; }
+    [JsonPropertyName("timestamp")] public string? Timestamp { get; set; }
+}
+
+public sealed class WriteValueResponse
+{
+    [JsonPropertyName("success")] public bool? Success { get; set; }
+    [JsonPropertyName("results")] public List<WriteValueResult>? Results { get; set; }
+    [JsonPropertyName("responseDetail")] public JsonElement? ResponseDetail { get; set; }
+}
+
+public sealed class WriteValueResult
+{
+    [JsonPropertyName("success")] public bool Success { get; set; }
+    [JsonPropertyName("elementId")] public string ElementId { get; set; } = "";
+    [JsonPropertyName("responseDetail")] public JsonElement? ResponseDetail { get; set; }
+}
+
 public sealed class CreateSubscriptionRequest
 {
     [JsonPropertyName("clientId")] public string ClientId { get; set; } = "";

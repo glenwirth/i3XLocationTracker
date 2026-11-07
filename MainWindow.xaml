@@ -256,6 +256,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="180"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -286,11 +287,38 @@
             </WrapPanel>
         </GroupBox>
 
+        <!-- Write a command payload to any object by Element Id -->
+        <GroupBox Header="Write Command" Grid.Row="2">
+            <StackPanel>
+                <WrapPanel Orientation="Horizontal">
+                    <Label Content="Object:"/>
+                    <ComboBox Width="300" ItemsSource="{Binding WriteTargets}" SelectedItem="{Binding SelectedWriteTarget}"
+                              ToolTip="Pick any object on the server, or select a row in the table below"/>
+                    <Button Content="↻" Command="{Binding RefreshWriteTargetsCommand}" ToolTip="Reload the object list from the server" Padding="8,4"/>
+                    <Label Content="Element Id:"/>
+                    <TextBox Width="240" Text="{Binding WriteElementId, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="The elementId to write to; filled in by the picker or table, or type one"/>
+                    <Label Content="Command:"/>
+                    <ComboBox Width="80" ItemsSource="{Binding CommandOptions}" SelectedItem="{Binding WriteCommand}"/>
+                    <Label Content="Color:"/>
+                    <ComboBox Width="80" ItemsSource="{Binding ColorOptions}" SelectedItem="{Binding WriteColor}"/>
+                </WrapPanel>
+                <WrapPanel Orientation="Horizontal">
+                    <Label Content="Payload:"/>
+                    <TextBox Width="420" FontFamily="Consolas" Text="{Binding WritePayload, UpdateSourceTrigger=PropertyChanged}"
+                             ToolTip="JSON written as the object's value; generated from Command/Color, editable before sending"/>
+                    <Button Content="Send" Command="{Binding SendCommandCommand}" Padding="16,4"/>
+                    <TextBlock Margin="8,0" VerticalAlignment="Center" Text="{Binding WriteStatus}" TextWrapping="Wrap"
+                               Foreground="{StaticResource MutedForegroundBrush}"/>
+                </WrapPanel>
+            </StackPanel>
+        </GroupBox>
+
         <!-- Status -->
-        <TextBlock Grid.Row="2" Margin="6,2" Text="{Binding ConnectionStatus}" TextWrapping="Wrap" Foreground="{StaticResource MutedForegroundBrush}"/>
+        <TextBlock Grid.Row="3" Margin="6,2" Text="{Binding ConnectionStatus}" TextWrapping="Wrap" Foreground="{StaticResource MutedForegroundBrush}"/>
 
         <!-- Current values table -->
-        <DataGrid Grid.Row="3" Margin="0,4" ItemsSource="{Binding Objects}" AutoGenerateColumns="False"
+        <DataGrid Grid.Row="4" Margin="0,4" ItemsSource="{Binding Objects}" SelectedItem="{Binding SelectedObject}" AutoGenerateColumns="False"
                   CanUserAddRows="False" IsReadOnly="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
             <DataGrid.Columns>
                 <DataGridCheckBoxColumn Header="Track" Binding="{Binding IsTracked, UpdateSourceTrigger=PropertyChanged}" Width="50"/>
@@ -307,6 +335,6 @@
         </DataGrid>
 
         <!-- Trajectory graph: X on the X axis, Y on the Y axis -->
-        <oxy:PlotView Grid.Row="4" Model="{Binding TrajectoryPlotModel}" Background="{StaticResource PanelBrush}"/>
+        <oxy:PlotView Grid.Row="5" Model="{Binding TrajectoryPlotModel}" Background="{StaticResource PanelBrush}"/>
     </Grid>
 </Window>

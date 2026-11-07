@@ -10,6 +10,11 @@ public sealed class AppSettings
     [JsonPropertyName("apiKeyHeader")] public string ApiKeyHeader { get; set; } = "X-API-Key";
     [JsonPropertyName("typeFilter")] public string TypeFilter { get; set; } = "type:Locations";
 
+    // Write Command panel
+    [JsonPropertyName("writeElementId")] public string WriteElementId { get; set; } = "";
+    [JsonPropertyName("writeCommand")] public string WriteCommand { get; set; } = "STOP";
+    [JsonPropertyName("writeColor")] public string WriteColor { get; set; } = "NONE";
+
     /// <summary>DPAPI-protected (current user), Base64-encoded. Empty when no token is set. Never plain text.</summary>
     [JsonPropertyName("protectedToken")] public string ProtectedToken { get; set; } = "";
 }

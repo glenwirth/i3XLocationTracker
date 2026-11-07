@@ -41,6 +41,13 @@ See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this ap
 ### Live data grid
 Shows, per discovered object: display name, element ID, latest X/Y, sector, battery, moving flag, last-update timestamp, and a status column (`live`, `no response`, `no Locations data`, etc.) for at-a-glance health.
 
+### Write commands
+The **Write Command** panel sends a JSON payload to any object, addressed by its Element Id, with `PUT /objects/value`:
+- **Object** lists every object on the server (any type, loaded on Connect; ↻ reloads it). Selecting a row in the data grid, or typing an **Element Id** directly, also sets the target.
+- **Command** (`GO` / `STOP`) and **Color** (`NONE` / `BLUE` / `RED`) generate the payload, e.g. `{"Command":"GO","Color":"BLUE"}`. The **Payload** box is editable, so any valid JSON can be sent.
+- **Send** writes the payload as the object's new current value (quality `Good`, current timestamp) and reports success or the server's error next to the button.
+- The target Element Id, command and color are remembered with the other settings.
+
 ### Settings persistence
 Every connection-dialog field — Base URL, auth scheme, API key header, type filter, and the token/key itself — is saved automatically to:
 ```
@@ -81,6 +88,7 @@ dotnet run
 3. Click **Start Tracking** to open the subscription and begin streaming. The data grid and trajectory chart update live.
 4. Uncheck an object's **Track** box to hide its line on the chart without stopping its data.
 5. Click **Stop Tracking** to end the subscription cleanly.
+6. To command an object, pick it in the **Write Command** panel (or select its row), choose Command and Color, and click **Send**.
 
 Settings are remembered automatically — there's nothing to save manually.
 
@@ -114,6 +122,7 @@ I3XLocationTracker/
 | `POST /subscriptions/register` | Register elements to watch |
 | `POST /subscriptions/stream` | Open the SSE push stream |
 | `POST /subscriptions/delete` | Tear down a subscription |
+| `PUT /objects/value` | Write a command payload to an object |
 
 (`POST /objects/value` — a one-shot current-value read — also exists in `I3xClient` but isn't used by the tracking flow, which relies entirely on the stream.)
 

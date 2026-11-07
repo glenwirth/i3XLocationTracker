@@ -92,6 +92,45 @@ public sealed class I3xClient : IDisposable
         return parsed?.Result ?? new List<I3xObjectInfo>();
     }
 
+    /// <summary>
+    /// Writes (replaces) the current value of one object via <c>PUT /objects/value</c>. The value is sent
+    /// in VQT form (value / quality "Good" / server-time timestamp). Throws with the server's detail on failure.
+    /// </summary>
+    public async Task WriteCurrentValueAsync(string elementId, JsonElement value, CancellationToken ct = default)
+    {
+        var request = new WriteValueRequest
+        {
+            Updates = new List<WriteValueUpdate>
+            {
+                new() { ElementId = elementId, Value = new WriteVqt { Value = value, Quality = "Good", Timestamp = DateTime.UtcNow.ToString("o") } },
+            },
+        };
+
+        using var resp = await _http.PutAsJsonAsync($"{BaseUrl}/objects/value", request, JsonOptions, ct).ConfigureAwait(false);
+        var body = await resp.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
+
+        WriteValueResponse? parsed = null;
+        try { parsed = JsonSerializer.Deserialize<WriteValueResponse>(body, JsonOptions); }
+        catch (JsonException) { /* non-JSON error body — fall through to the HTTP status */ }
+
+        var entry = parsed?.Results?.FirstOrDefault(r => r.ElementId == elementId) ?? parsed?.Results?.FirstOrDefault();
+        if (resp.IsSuccessStatusCode && (entry?.Success ?? parsed?.Success ?? true))
+            return;
+
+        var detail = DescribeProblem(entry?.ResponseDetail) ?? DescribeProblem(parsed?.ResponseDetail)
+                     ?? (string.IsNullOrWhiteSpace(body) ? null : body.Trim());
+        throw new InvalidOperationException(
+            $"HTTP {(int)resp.StatusCode} {resp.ReasonPhrase}" + (detail != null ? $" — {detail}" : ""));
+    }
+
+    private static string? DescribeProblem(JsonElement? detail)
+    {
+        if (detail is not { ValueKind: JsonValueKind.Object } d) return null;
+        var title = d.TryGetProperty("title", out var t) ? t.GetString() : null;
+        var text = d.TryGetProperty("detail", out var x) ? x.GetString() : null;
+        return string.Join(": ", new[] { title, text }.Where(s => !string.IsNullOrWhiteSpace(s)));
+    }
+
     // ----- Subscriptions (live push via SSE — no polling) -----
 
     public async Task<string> CreateSubscriptionAsync(string clientId, string? displayName, CancellationToken ct = default)

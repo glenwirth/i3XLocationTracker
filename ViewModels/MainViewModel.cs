@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows.Threading;
 using I3XLocationTracker.Models;
 using I3XLocationTracker.Services;
@@ -42,6 +43,70 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     public RelayCommand DiscoverCommand { get; }
     public RelayCommand StartTrackingCommand { get; }
     public RelayCommand StopTrackingCommand { get; }
+    public RelayCommand SendCommandCommand { get; }
+    public RelayCommand RefreshWriteTargetsCommand { get; }
+
+    // ----- Write Command panel -----
+
+    /// <summary>Every object on the server (any type), offered as write targets.</summary>
+    public ObservableCollection<WriteTarget> WriteTargets { get; } = new();
+
+    public string[] CommandOptions { get; } = { "GO", "STOP" };
+    public string[] ColorOptions { get; } = { "NONE", "BLUE", "RED" };
+
+    private WriteTarget? _selectedWriteTarget;
+    public WriteTarget? SelectedWriteTarget
+    {
+        get => _selectedWriteTarget;
+        set
+        {
+            _selectedWriteTarget = value;
+            OnPropertyChanged();
+            if (value != null) WriteElementId = value.ElementId;
+        }
+    }
+
+    private TrackedObject? _selectedObject;
+    /// <summary>Row selected in the data grid; selecting one makes it the write target.</summary>
+    public TrackedObject? SelectedObject
+    {
+        get => _selectedObject;
+        set
+        {
+            _selectedObject = value;
+            OnPropertyChanged();
+            if (value != null) WriteElementId = value.ElementId;
+        }
+    }
+
+    private string _writeElementId = "";
+    public string WriteElementId
+    {
+        get => _writeElementId;
+        set
+        {
+            _writeElementId = value;
+            OnPropertyChanged();
+            // Keep the picker in step with a typed / grid-selected id (null when it isn't in the list).
+            var match = WriteTargets.FirstOrDefault(t => t.ElementId == value);
+            if (!ReferenceEquals(match, _selectedWriteTarget)) { _selectedWriteTarget = match; OnPropertyChanged(nameof(SelectedWriteTarget)); }
+            SendCommandCommand?.RaiseCanExecuteChanged();
+            ScheduleSave();
+        }
+    }
+
+    private string _writeCommand = "STOP";
+    public string WriteCommand { get => _writeCommand; set { _writeCommand = value; OnPropertyChanged(); RebuildPayload(); ScheduleSave(); } }
+
+    private string _writeColor = "NONE";
+    public string WriteColor { get => _writeColor; set { _writeColor = value; OnPropertyChanged(); RebuildPayload(); ScheduleSave(); } }
+
+    private string _writePayload = "";
+    /// <summary>The JSON that will be written. Generated from Command/Color, but freely editable before sending.</summary>
+    public string WritePayload { get => _writePayload; set { _writePayload = value; OnPropertyChanged(); SendCommandCommand?.RaiseCanExecuteChanged(); } }
+
+    private string _writeStatus = "";
+    public string WriteStatus { get => _writeStatus; set { _writeStatus = value; OnPropertyChanged(); } }
 
     private string _baseUrl = "http://localhost:8885/i3x/v1";
     public string BaseUrl { get => _baseUrl; set { _baseUrl = value; OnPropertyChanged(); ScheduleSave(); } }
@@ -81,6 +146,10 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         _apiKeyHeader = saved.ApiKeyHeader;
         _typeFilter = saved.TypeFilter;
         _token = token;
+        _writeElementId = saved.WriteElementId;
+        _writeCommand = CommandOptions.Contains(saved.WriteCommand) ? saved.WriteCommand : "STOP";
+        _writeColor = ColorOptions.Contains(saved.WriteColor) ? saved.WriteColor : "NONE";
+        _writePayload = BuildPayload(_writeCommand, _writeColor);
 
         _saveSettingsTimer = new DispatcherTimer { Interval = SaveDebounceDelay };
         _saveSettingsTimer.Tick += (_, _) => { _saveSettingsTimer.Stop(); PersistSettings(); };
@@ -89,6 +158,9 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         DiscoverCommand = new RelayCommand(DiscoverAsync, () => IsConnected);
         StartTrackingCommand = new RelayCommand(StartTrackingAsync, () => IsConnected && !IsTracking && Objects.Count > 0);
         StopTrackingCommand = new RelayCommand(() => { StopTracking(); return Task.CompletedTask; }, () => IsTracking);
+        SendCommandCommand = new RelayCommand(SendCommandAsync,
+            () => IsConnected && !string.IsNullOrWhiteSpace(WriteElementId) && !string.IsNullOrWhiteSpace(WritePayload));
+        RefreshWriteTargetsCommand = new RelayCommand(LoadWriteTargetsAsync, () => IsConnected);
     }
 
     /// <summary>Debounces rapid successive edits (e.g. keystrokes in a textbox) into a single disk write.</summary>
@@ -106,6 +178,9 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             AuthScheme = AuthScheme.ToString(),
             ApiKeyHeader = ApiKeyHeader,
             TypeFilter = TypeFilter,
+            WriteElementId = WriteElementId,
+            WriteCommand = WriteCommand,
+            WriteColor = WriteColor,
         };
         SettingsService.Save(settings, Token);
     }
@@ -186,6 +261,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             _client = client;
             IsConnected = true;
             ConnectionStatus = $"Connected to {info.ServerName ?? BaseUrl} (spec {info.SpecVersion ?? "?"}).";
+            await LoadWriteTargetsAsync().ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -230,6 +306,60 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         catch (Exception ex)
         {
             ConnectionStatus = $"Discovery failed: {ex.Message}";
+        }
+    }
+
+    /// <summary>Lists every object on the server (unfiltered) for the write-target picker. Best-effort.</summary>
+    private async Task LoadWriteTargetsAsync()
+    {
+        if (_client == null) return;
+        try
+        {
+            var all = await _client.GetObjectsAsync(null).ConfigureAwait(true);
+            WriteTargets.Clear();
+            foreach (var o in all.OrderBy(o => o.ElementId, StringComparer.OrdinalIgnoreCase))
+                WriteTargets.Add(new WriteTarget(o.ElementId, o.DisplayName));
+            WriteElementId = WriteElementId; // re-sync the picker with the current id
+            WriteStatus = $"{WriteTargets.Count} object(s) available as write targets.";
+        }
+        catch (Exception ex)
+        {
+            WriteStatus = $"Couldn't list objects for the write picker ({ex.Message}); you can still type an Element Id.";
+        }
+    }
+
+    private static string BuildPayload(string command, string color) =>
+        JsonSerializer.Serialize(new { Command = command, Color = color });
+
+    private void RebuildPayload() => WritePayload = BuildPayload(WriteCommand, WriteColor);
+
+    private async Task SendCommandAsync()
+    {
+        if (_client == null) return;
+        var elementId = WriteElementId.Trim();
+
+        JsonElement value;
+        try
+        {
+            using var doc = JsonDocument.Parse(WritePayload);
+            value = doc.RootElement.Clone();
+        }
+        catch (JsonException ex)
+        {
+            WriteStatus = $"Payload is not valid JSON: {ex.Message}";
+            return;
+        }
+
+        var compact = JsonSerializer.Serialize(value);
+        try
+        {
+            WriteStatus = $"Writing to {elementId}…";
+            await _client.WriteCurrentValueAsync(elementId, value).ConfigureAwait(true);
+            WriteStatus = $"{DateTime.Now:HH:mm:ss}  Wrote {compact} to {elementId}.";
+        }
+        catch (Exception ex)
+        {
+            WriteStatus = $"{DateTime.Now:HH:mm:ss}  Write to {elementId} failed: {ex.Message}";
         }
     }
 
@@ -353,6 +483,8 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
         DiscoverCommand.RaiseCanExecuteChanged();
         StartTrackingCommand.RaiseCanExecuteChanged();
         StopTrackingCommand.RaiseCanExecuteChanged();
+        SendCommandCommand.RaiseCanExecuteChanged();
+        RefreshWriteTargetsCommand.RaiseCanExecuteChanged();
     }
 
     public void Dispose()
@@ -370,4 +502,11 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
     public event PropertyChangedEventHandler? PropertyChanged;
     private void OnPropertyChanged([CallerMemberName] string? name = null) =>
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+}
+
+/// <summary>An object offered in the write-target picker.</summary>
+public sealed record WriteTarget(string ElementId, string? DisplayName)
+{
+    public override string ToString() =>
+        string.IsNullOrWhiteSpace(DisplayName) || DisplayName == ElementId ? ElementId : $"{DisplayName}  —  {ElementId}";
 }
