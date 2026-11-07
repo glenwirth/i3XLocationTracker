@@ -73,6 +73,16 @@ The whole window — connection panel, buttons, combo box (including its dropdow
 
 > **Note:** this file contains a plaintext database credential and an internal server IP for the demo environment it was exported from. Treat it as sensitive if you didn't intend for it to be public.
 
+## Lego Spike Prime AMR code
+
+[`LegoSpikePrimeAMRIntegrationUsingMQTT/`](LegoSpikePrimeAMRIntegrationUsingMQTT/) contains the code for physical Lego AMRs that this app can track and command:
+
+- **`Pybricks/`**: the **Lego Spike Prime [Pybricks](https://pybricks.com/) Python code** for the hub (`amr1_pybricks.py`, `amr2_pybricks.py`). It drives the motors and sensors and talks to the Wi-Fi backpack over UART on port A.
+- **`WifiCard/`**: the **ESP8266 Wi-Fi Backpack MicroPython code** (`boot.py`, `main.py`). It joins Wi-Fi, then bridges the hub to an MQTT broker. It publishes position and status, and subscribes to `Site1/AMRs/AMR1/Command`. Wi-Fi and broker settings are in `wifi_data.py` and `mqtt_data.py`.
+- **`MQTTMessages.txt`**: sample MQTT topics and payloads, including the `{"Command":"GO","Color":"BLUE"}` style command messages that the **Write Command** panel sends.
+
+> **Note:** `WifiCard/wifi_data.py` contains a plaintext Wi-Fi network name and password, and `mqtt_data.py` an internal broker IP. Change them to match your own network before flashing the backpack.
+
 ## Build & run
 
 ```bash

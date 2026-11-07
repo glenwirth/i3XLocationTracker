@@ -1,0 +1,12 @@
+Site1/AMRs/AMR1/Position
+
+{"Y": "40.00", "Y": "30.00"}
+
+Site1/AMRs/AMR1/Command
+
+{"Command":"STOP","Color":"NONE"}
+{"Command":"GO","Color":"NONE"}
+{"Command":"STOP","Color":"BLUE"}
+{"Command":"GO","Color":"BLUE"}
+{"Command":"STOP","Color":"RED"}
+{"Command":"GO","Color":"RED"}
