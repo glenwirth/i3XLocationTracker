@@ -47,8 +47,8 @@ public sealed class TrackedObject : INotifyPropertyChanged
     private bool? _latestIsMoving;
     public bool? LatestIsMoving { get => _latestIsMoving; private set { _latestIsMoving = value; OnPropertyChanged(); } }
 
-    private int? _latestSectorId;
-    public int? LatestSectorId { get => _latestSectorId; private set { _latestSectorId = value; OnPropertyChanged(); } }
+    private string? _latestProduct;
+    public string? LatestProduct { get => _latestProduct; private set { _latestProduct = value; OnPropertyChanged(); } }
 
     private DateTime? _lastUpdateUtc;
     public DateTime? LastUpdateUtc { get => _lastUpdateUtc; private set { _lastUpdateUtc = value; OnPropertyChanged(); OnPropertyChanged(nameof(LastUpdateLocal)); } }
@@ -115,7 +115,7 @@ public sealed class TrackedObject : INotifyPropertyChanged
             LatestY = newest.Y;
             LatestBattery = newest.Battery;
             LatestIsMoving = newest.IsMoving;
-            LatestSectorId = newest.SectorId;
+            LatestProduct = newest.Product;
             LastUpdateUtc = newest.TimestampUtc;
             Status = "live";
 

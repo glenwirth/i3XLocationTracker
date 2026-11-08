@@ -449,7 +449,7 @@ public sealed class MainViewModel : INotifyPropertyChanged, IDisposable
             var readings = LocationsReading.ParseFrom(u.Value);
             if (readings.Count == 0)
             {
-                obj.SetError("no Locations data");
+                obj.SetError("no X/Y data");
                 continue;
             }
             if (obj.ApplyReadings(readings)) anyChanged = true;

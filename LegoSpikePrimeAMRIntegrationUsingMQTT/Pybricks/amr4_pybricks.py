@@ -90,6 +90,9 @@ d_center = 0.0
 max_speed = 20
 # replaces MotorPair.set_default_speed()
 default_speed = 0
+color = "NONE"
+empty_battery = 6000  # mV, approximate
+full_battery = 8300   # mV, approximate
 
 def start_pair(steering):
     # replaces SPIKE 2 MotorPair('C', 'E').start(steering) at default_speed.
@@ -110,11 +113,14 @@ def stop_pair():
     left_motor.stop()
     right_motor.stop()
 
-def recordXY():
-    global default_speed
+def recordData():
+    global default_speed, empty_battery, full_battery, color
+    percent_battery = max(0, min(100, (prhub.battery.voltage() - empty_battery) * 100 // (full_battery - empty_battery)))
     strX = '{0:.1f}'.format(new_x)
     strY = '{0:.1f}'.format(new_y)
-    msg = {'X':float(strX), 'Y':float(strY)}
+    strDefaultSpeed = '{0:.1f}'.format(default_speed)
+    strBattery = '{0:.1f}'.format(percent_battery)
+    msg = {'X':float(strX), 'Y':float(strY), 'Color':color, 'Battery':float(strBattery), 'Speed':float(strDefaultSpeed)}
     msgStr = ujson.dumps(msg)
     ##print(msgStr)
     result = ask(msgStr)
@@ -127,13 +133,16 @@ def recordXY():
                 prhub.display.icon(Icon.FALSE)
             if (resultJSON["Command"] == "GO"):
                 default_speed = max_speed
-                prhub.display.icon(Icon.RIGHT)
+                prhub.display.icon(Icon.RIGHT)            
             if (resultJSON["Color"] == "RED"):
                 prhub.light.on(Color.RED)
+                color = "RED"
             elif (resultJSON["Color"] == "BLUE"):
                 prhub.light.on(Color.BLUE)
+                color = "BLUE"
             else:
                 prhub.light.off()
+                color = "NONE"
             #updateXY(float(resultJSON["X"]), float(resultJSON["Y"]))
         except Exception as e:
             print("ERROR : "+str(e))
@@ -192,7 +201,7 @@ def line_follow_to_object():
         currentT = clock.time()
         if ((currentT - lastRecordT) >= 1000):
             ##print(str(degrees) + "|" + str(sin(angle)) + "|" + str(cos(angle)))
-            recordXY()
+            recordData()
             lastRecordT = currentT
         distance = distance_sensor.distance()  # mm, 2000 if nothing seen
         if distance>40:
@@ -217,7 +226,8 @@ def updateXY(x,y):
     new_y = y
 
 #execute
-prhub.display.text('AMR1')
+prhub.display.text('AMR4')
+prhub.display.icon(Icon.FALSE)
 prhub.speaker.beep()
 line_follow_to_object()
 raise SystemExit

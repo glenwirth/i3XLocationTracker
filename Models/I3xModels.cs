@@ -149,8 +149,8 @@ public sealed class DeleteSubscriptionsRequest
 }
 
 /// <summary>
-/// One reading extracted from a "Locations" typed object's current value,
-/// e.g. {"Locations":[{"Timestamp":..,"SectorId":..,"X":..,"Y":..,"Z":..,"Battery":..,"IsMoving":..}]}
+/// One reading from a "Locations" typed object's current value, whose fields are all at the top level,
+/// e.g. {"Timestamp":..,"X":..,"Y":..,"Z":..,"Battery":..,"IsMoving":..,"Product":"NONE"}
 /// </summary>
 public sealed class LocationsReading
 {
@@ -158,43 +158,46 @@ public sealed class LocationsReading
     public double X { get; set; }
     public double Y { get; set; }
     public double? Z { get; set; }
-    public int? SectorId { get; set; }
     public double? Battery { get; set; }
     public bool? IsMoving { get; set; }
+    public string? Product { get; set; }
 
+    /// <summary>Returns the value's single reading, or an empty list if it has no numeric X and Y.</summary>
     public static List<LocationsReading> ParseFrom(JsonElement value)
     {
         var readings = new List<LocationsReading>();
         if (value.ValueKind != JsonValueKind.Object) return readings;
-        if (!value.TryGetProperty("Locations", out var locationsArray)) return readings;
-        if (locationsArray.ValueKind != JsonValueKind.Array) return readings;
 
-        foreach (var item in locationsArray.EnumerateArray())
+        var x = GetNumber(value, "X");
+        var y = GetNumber(value, "Y");
+        if (x == null || y == null) return readings;
+
+        var reading = new LocationsReading
         {
-            if (item.ValueKind != JsonValueKind.Object) continue;
-            if (!item.TryGetProperty("X", out var xEl) || !item.TryGetProperty("Y", out var yEl)) continue;
-            if (!xEl.TryGetDouble(out var x) || !yEl.TryGetDouble(out var y)) continue;
+            X = x.Value,
+            Y = y.Value,
+            Z = GetNumber(value, "Z"),
+            Battery = GetNumber(value, "Battery"),
+        };
 
-            var reading = new LocationsReading { X = x, Y = y };
-
-            if (item.TryGetProperty("Timestamp", out var tsEl))
-            {
-                if (tsEl.ValueKind == JsonValueKind.Number && tsEl.TryGetInt64(out var epochMs))
-                    reading.TimestampUtc = DateTimeOffset.FromUnixTimeMilliseconds(epochMs).UtcDateTime;
-                else if (tsEl.ValueKind == JsonValueKind.String && DateTime.TryParse(tsEl.GetString(), out var dt))
-                    reading.TimestampUtc = dt.ToUniversalTime();
-            }
-            if (reading.TimestampUtc == default) reading.TimestampUtc = DateTime.UtcNow;
-
-            if (item.TryGetProperty("Z", out var zEl) && zEl.TryGetDouble(out var z)) reading.Z = z;
-            if (item.TryGetProperty("SectorId", out var secEl) && secEl.TryGetInt32(out var sec)) reading.SectorId = sec;
-            if (item.TryGetProperty("Battery", out var batEl) && batEl.TryGetDouble(out var bat)) reading.Battery = bat;
-            if (item.TryGetProperty("IsMoving", out var movEl) && movEl.ValueKind is JsonValueKind.True or JsonValueKind.False)
-                reading.IsMoving = movEl.GetBoolean();
-
-            readings.Add(reading);
+        if (value.TryGetProperty("Timestamp", out var tsEl))
+        {
+            if (tsEl.ValueKind == JsonValueKind.Number && tsEl.TryGetInt64(out var epochMs))
+                reading.TimestampUtc = DateTimeOffset.FromUnixTimeMilliseconds(epochMs).UtcDateTime;
+            else if (tsEl.ValueKind == JsonValueKind.String && DateTime.TryParse(tsEl.GetString(), out var dt))
+                reading.TimestampUtc = dt.ToUniversalTime();
         }
+        if (reading.TimestampUtc == default) reading.TimestampUtc = DateTime.UtcNow;
 
+        if (value.TryGetProperty("IsMoving", out var movEl) && movEl.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            reading.IsMoving = movEl.GetBoolean();
+        if (value.TryGetProperty("Product", out var prodEl) && prodEl.ValueKind == JsonValueKind.String)
+            reading.Product = prodEl.GetString();
+
+        readings.Add(reading);
         return readings;
     }
+
+    private static double? GetNumber(JsonElement value, string name) =>
+        value.TryGetProperty(name, out var el) && el.ValueKind == JsonValueKind.Number && el.TryGetDouble(out var d) ? d : null;
 }

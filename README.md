@@ -2,7 +2,7 @@
 
 A Windows desktop app (WPF, .NET 8) that connects to an [i3X](https://github.com/cesmii/i3X) server, discovers every object whose type is `Locations`, and plots their live X/Y trajectory in real time — no polling, driven entirely by the i3X push-subscription (SSE) API.
 
-Built for tracking things like AMRs (autonomous mobile robots) that report `{ Timestamp, X, Y, Z, SectorId, Battery, IsMoving }` readings under a `Locations` array.
+Built for tracking things like AMRs (autonomous mobile robots) that report `{ Timestamp, X, Y, Z, Battery, IsMoving, Product }` readings.
 
 Built with Claude Code; the [i3x-mcp](https://www.npmjs.com/package/i3x-mcp) MCP server was used during development for Claude to explore the live i3X server's object catalog and capabilities.
 
@@ -39,7 +39,7 @@ See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this ap
 - Axes autoscale to the live data range.
 
 ### Live data grid
-Shows, per discovered object: display name, element ID, latest X/Y, sector, battery, moving flag, last-update timestamp, and a status column (`live`, `no response`, `no Locations data`, etc.) for at-a-glance health.
+Shows, per discovered object: display name, element ID, latest X/Y, product, battery, moving flag, last-update timestamp, and a status column (`live`, `no response`, `no X/Y data`, etc.) for at-a-glance health.
 
 ### Write commands
 The **Write Command** panel sends a JSON payload to any object, addressed by its Element Id, with `PUT /objects/value`:
@@ -77,7 +77,7 @@ The whole window — connection panel, buttons, combo box (including its dropdow
 
 [`LegoSpikePrimeAMRIntegrationUsingMQTT/`](LegoSpikePrimeAMRIntegrationUsingMQTT/) contains the code for physical Lego AMRs that this app can track and command:
 
-- **`Pybricks/`**: the **Lego Spike Prime [Pybricks](https://pybricks.com/) Python code** for the hub (`amr1_pybricks.py`, `amr2_pybricks.py`). It drives the motors and sensors and talks to the Wi-Fi backpack over UART on port A.
+- **`Pybricks/`**: the **Lego Spike Prime [Pybricks](https://pybricks.com/) Python code** for the hub (`amr3_pybricks.py`, `amr4_pybricks.py`). It drives the motors and sensors and talks to the Wi-Fi backpack over UART on port A.
 - **`WifiCard/`**: the **ESP8266 Wi-Fi Backpack MicroPython code** (`boot.py`, `main.py`). It joins Wi-Fi, then bridges the hub to an MQTT broker. It publishes position and status, and subscribes to `Site1/AMRs/AMR1/Command`. Wi-Fi and broker settings are in `wifi_data.py` and `mqtt_data.py`.
 - **`MQTTMessages.txt`**: sample MQTT topics and payloads, including the `{"Command":"GO","Color":"BLUE"}` style command messages that the **Write Command** panel sends.
 
@@ -141,9 +141,13 @@ I3XLocationTracker/
 Objects of type `Locations` are expected to expose a current value shaped like:
 ```json
 {
-  "Locations": [
-    { "Timestamp": 1787528602287, "SectorId": 1, "X": 205570, "Y": 189887, "Z": 0, "Battery": 87, "IsMoving": true }
-  ]
+  "Timestamp": 1794143297862,
+  "X": 66,
+  "Y": 13,
+  "Z": 0,
+  "Battery": 94,
+  "IsMoving": true,
+  "Product": "NONE"
 }
 ```
 `Timestamp` may be epoch milliseconds or an ISO-8601 string; both are handled.

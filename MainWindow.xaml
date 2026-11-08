@@ -326,7 +326,7 @@
                 <DataGridTextColumn Header="Element Id" Binding="{Binding ElementId}" Width="200" IsReadOnly="True"/>
                 <DataGridTextColumn Header="X" Binding="{Binding LatestX, StringFormat=N2}" Width="90" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Y" Binding="{Binding LatestY, StringFormat=N2}" Width="90" IsReadOnly="True"/>
-                <DataGridTextColumn Header="Sector" Binding="{Binding LatestSectorId}" Width="60" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Product" Binding="{Binding LatestProduct}" Width="70" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Battery" Binding="{Binding LatestBattery, StringFormat=N0}" Width="70" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Moving" Binding="{Binding LatestIsMoving}" Width="60" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Last Update" Binding="{Binding LastUpdateLocal, StringFormat=HH:mm:ss}" Width="90" IsReadOnly="True"/>
