@@ -1,6 +1,6 @@
 # i3X Locations Tracker
 
-A Windows desktop app (WPF, .NET 8) that connects to an [i3X](https://github.com/cesmii/i3X) server, discovers every object whose type is `Locations`, and plots their live X/Y trajectory in real time — no polling, driven entirely by the i3X push-subscription (SSE) API.
+A Windows desktop app (WPF, .NET 8), with a [browser version](#web-app), that connects to an [i3X](https://github.com/cesmii/i3X) server, discovers every object whose type is `Locations`, and plots their live X/Y trajectory in real time — no polling, driven entirely by the i3X push-subscription (SSE) API.
 
 Built for tracking things like AMRs (autonomous mobile robots) that report `{ Timestamp, X, Y, Z, Battery, IsMoving, Product }` readings.
 
@@ -62,9 +62,38 @@ The whole window — connection panel, buttons, combo box (including its dropdow
 
 ---
 
+## Web app
+
+[`I3XLocationTracker.Web/`](I3XLocationTracker.Web/) is a browser version of the same app, with the same connection, discovery, live tracking, trajectory chart and Write Command features. It runs alongside the desktop app and shares its settings file, including the saved token.
+
+```bash
+dotnet run --project I3XLocationTracker.Web
+```
+
+Then open <http://localhost:5085>, or `http://<this-computer's-IP>:5085` from another computer. Windows Firewall must allow inbound TCP port 5085.
+
+- A small ASP.NET Core server makes all the i3X calls and passes live updates to the page with Server-Sent Events. It reuses the desktop app's `I3xClient`, models and `SettingsService`.
+- The token stays on the server. The page can replace it, but can never read it back.
+- This is a test program: it is open to the whole network over plain HTTP with no login. Anyone who can reach port 5085 can change the connection settings and use **Write Command to move physical robots**, so only run it on a network you trust.
+- It runs on Windows only, because saved tokens are encrypted with Windows DPAPI. Requires the .NET 8 SDK.
+
+### Run as a Windows service
+
+To keep the web app running without a logged-in user, run this from an **administrator** PowerShell in the repo folder. Run it again to update the service after code changes.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\I3XLocationTracker.Web\install-service.ps1
+```
+
+It builds the app, installs it to `C:\Program Files\I3X Locations Tracker Web`, and registers the `I3XLocationTrackerWeb` service to start with Windows and restart on failure.
+
+The service runs as the low-privilege LocalService account, so it can't read a token saved by your own Windows account. The first time, open the page, set Auth to Bearer, enter the token and click **Connect**. Port 5085 must be free, so stop any copy started with `dotnet run` first.
+
+To remove it, run `uninstall-service.ps1` the same way.
+
 ## Requirements
 
-- Windows with .NET 8 SDK (or the .NET 8 Desktop Runtime to just run a published build).
+- Windows with .NET 8 SDK (or, to just run a published build, the .NET 8 Desktop Runtime for the desktop app or the ASP.NET Core 8 Runtime for the web app).
 - An i3X server reachable over HTTP(S) (tested against a local HighByte Intelligence Hub instance at `http://localhost:8885/i3x/v1`).
 
 ## Demo i3X server config
@@ -119,7 +148,11 @@ I3XLocationTracker/
 ├── Models/
 │   ├── I3xModels.cs             DTOs for i3X responses + LocationsReading parsing
 │   └── AppSettings.cs           Persisted settings shape
-└── App.xaml / .cs               Standard WPF entry point
+├── App.xaml / .cs               Standard WPF entry point
+└── I3XLocationTracker.Web/      Browser version
+    ├── Program.cs               Web server: settings, i3X calls, live stream to the page
+    ├── wwwroot/                 Page, styles, and the UI and trajectory chart script
+    └── install-service.ps1 / uninstall-service.ps1   Add or remove the Windows service
 ```
 
 ### i3X REST endpoints used
@@ -156,6 +189,8 @@ Objects of type `Locations` are expected to expose a current value shaped like:
 
 ## Notes & limitations
 
+- HighByte i3X tokens begin with `i3X.`, which is part of the token. Without it the server answers `401 Unauthorized`.
+- The Windows service keeps its settings and token separately from your own account, under `C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\I3XLocationTracker`.
 - The DPAPI-encrypted token is tied to the current Windows user account and machine — copying `settings.json` elsewhere won't restore a usable token there.
 - The 10-minute rolling trajectory window and the color palette (8 colors, cycling) are hardcoded in `TrackedObject.cs` / `MainViewModel.cs` if you want to tune them.
 - If the i3X server enforces auth on some endpoints but not others (as some demo servers do), `Connect`/`Discover` may succeed while `Start Tracking` fails with 401 — check the auth scheme/token if that happens.

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>i3X Locations Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <section class="panel">
+      <h2>i3X Connection</h2>
+      <div class="row">
+        <label>Base URL: <input id="baseUrl" class="w-xl" spellcheck="false"></label>
+        <label>Auth:
+          <select id="authScheme">
+            <option>None</option>
+            <option>Bearer</option>
+            <option>ApiKey</option>
+          </select>
+        </label>
+        <label>Token / Key: <input id="token" type="password" class="w-l" autocomplete="off"></label>
+        <label>API key header: <input id="apiKeyHeader" class="w-m" spellcheck="false"></label>
+        <button id="connect">Connect</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Locations Objects</h2>
+      <div class="row">
+        <label>Type filter: <input id="typeFilter" class="w-m" spellcheck="false"></label>
+        <button id="discover" disabled>Discover</button>
+        <button id="start" disabled>Start Tracking</button>
+        <button id="stop" disabled>Stop Tracking</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Write Command</h2>
+      <div class="row">
+        <label>Object:
+          <select id="writeTarget" class="w-xl" title="Pick any object on the server, or click a row in the table below"></select>
+        </label>
+        <button id="refreshTargets" title="Reload the object list from the server" aria-label="Reload the object list" disabled>↻</button>
+        <label>Element Id: <input id="writeElementId" class="w-l" spellcheck="false" title="The elementId to write to; filled in by the picker or table, or type one"></label>
+        <label>Command:
+          <select id="writeCommand"><option>GO</option><option>STOP</option></select>
+        </label>
+        <label>Color:
+          <select id="writeColor"><option>NONE</option><option>BLUE</option><option>RED</option></select>
+        </label>
+      </div>
+      <div class="row">
+        <label>Payload: <input id="writePayload" class="w-xl mono" spellcheck="false" title="JSON written as the object's value; generated from Command/Color, editable before sending"></label>
+        <button id="send" disabled>Send</button>
+        <span id="writeStatus" class="muted" role="status"></span>
+      </div>
+    </section>
+
+    <p id="status" class="muted status" role="status">Not connected.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Track</th><th>Name</th><th>Element Id</th><th class="num">X</th><th class="num">Y</th>
+            <th>Product</th><th class="num">Battery</th><th>Moving</th><th>Last Update</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="objects"></tbody>
+      </table>
+    </div>
+
+    <section class="chart-panel">
+      <div class="chart-head">
+        <h2>Trajectory (Y vs X)</h2>
+        <div id="legend" class="legend"></div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="chart" role="img" aria-label="X/Y trajectory of each tracked object. The same latest values are in the table above."></canvas>
+        <div id="tooltip" class="tooltip" hidden></div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
