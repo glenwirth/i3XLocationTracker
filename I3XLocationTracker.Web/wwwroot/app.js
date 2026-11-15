@@ -359,7 +359,10 @@ function niceTicks(min, max, approxCount) {
   const magnitude = 10 ** Math.floor(Math.log10(rawStep));
   const step = [1, 2, 5, 10].map(n => n * magnitude).find(s => s >= rawStep) ?? 10 * magnitude;
   const ticks = [];
-  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) ticks.push(Math.round(v / step) * step);
+  for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) {
+    const tick = Math.round(v / step) * step;
+    ticks.push(tick === 0 ? 0 : tick); // rounding can give -0, which would print as "-0"
+  }
   return ticks;
 }
 
