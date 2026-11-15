@@ -108,6 +108,9 @@ To remove it, run `uninstall-service.ps1` the same way.
 
 - **`Pybricks/`**: the **Lego Spike Prime [Pybricks](https://pybricks.com/) Python code** for the hub (`amr3_pybricks.py`, `amr4_pybricks.py`). It drives the motors and sensors and talks to the Wi-Fi backpack over UART on port A.
 - **`WifiCard/`**: the **ESP8266 Wi-Fi Backpack MicroPython code** (`boot.py`, `main.py`). It joins Wi-Fi, then bridges the hub to an MQTT broker. It publishes position and status, and subscribes to `Site1/AMRs/AMR1/Command`. Wi-Fi and broker settings are in `wifi_data.py` and `mqtt_data.py`.
+  It also holds two Windows tools for loading this code onto the ESP8266 over USB:
+  - **`CH341SER.ZIP`**: the Windows driver for the backpack's CH341 USB-to-serial chip. Unzip it and run `CH341SER\SETUP.EXE`. The ESP8266 then shows up as a COM port.
+  - **`thonny-5.0.1-windows-portable-x64.zip`**: [Thonny](https://thonny.org/), a Python IDE used to set up, configure and edit MicroPython on the ESP8266. It's the portable version, so unzip it and run `thonny.exe`, with no install needed. In Thonny, choose **MicroPython (ESP8266)** and the backpack's COM port as the interpreter, then open, edit and save `boot.py`, `main.py`, `wifi_data.py` and `mqtt_data.py` on the device.
 - **`MQTTMessages.txt`**: sample MQTT topics and payloads, including the `{"Command":"GO","Color":"BLUE"}` style command messages that the **Write Command** panel sends.
 
 > **Note:** `WifiCard/wifi_data.py` contains a plaintext Wi-Fi network name and password, and `mqtt_data.py` an internal broker IP. Change them to match your own network before flashing the backpack.

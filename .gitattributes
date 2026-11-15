@@ -7,3 +7,5 @@
 *.dll binary
 *.exe binary
 *.pdb binary
+*.zip binary
+*.ZIP binary
