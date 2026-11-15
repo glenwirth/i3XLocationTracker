@@ -1,6 +1,6 @@
 #Requires -RunAsAdministrator
 # Builds the web app and installs (or updates) it as an automatically starting Windows service.
-# It runs as LocalService, so it keeps its own settings and token, separate from the desktop app.
+# It runs as LocalService, so it keeps its own settings and token, separate from your Windows account's.
 
 $ErrorActionPreference = 'Stop'
 

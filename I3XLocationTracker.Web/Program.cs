@@ -13,7 +13,8 @@ builder.Host.UseWindowsService(options => options.ServiceName = "I3XLocationTrac
 
 // Test program: open to every computer on the network over plain HTTP, with no login.
 // Anyone who can reach this port can change the connection settings and command the robots.
-builder.WebHost.UseUrls("http://*:5085");
+// Port 5085 unless overridden, e.g. `--urls http://*:5099` to run a second copy beside the service.
+if (string.IsNullOrEmpty(builder.Configuration["urls"])) builder.WebHost.UseUrls("http://*:5085");
 
 var app = builder.Build();
 app.UseDefaultFiles();
@@ -22,7 +23,7 @@ app.UseStaticFiles();
 var streamRetryDelay = TimeSpan.FromSeconds(3);
 var sseJson = new JsonSerializerOptions(JsonSerializerDefaults.Web);
 
-// ----- Settings (shared with the desktop app; the token never leaves the server) -----
+// ----- Settings (the token never leaves the server) -----
 
 app.MapGet("/api/settings", () => ToDto(SettingsService.Load()));
 
