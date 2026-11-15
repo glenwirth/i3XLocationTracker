@@ -66,6 +66,8 @@ The whole window — connection panel, buttons, combo box (including its dropdow
 
 [`I3XLocationTracker.Web/`](I3XLocationTracker.Web/) is a browser version of the same app, with the same connection, discovery, live tracking, trajectory chart and Write Command features. It runs alongside the desktop app and shares its settings file, including the saved token.
 
+![The web version in a browser, streaming AMR1, AMR2 and AMR4 live after sending a GO/BLUE command to AMR4](screenshot-web.png)
+
 ```bash
 dotnet run --project I3XLocationTracker.Web
 ```
