@@ -8,7 +8,7 @@ public sealed class AppSettings
     [JsonPropertyName("baseUrl")] public string BaseUrl { get; set; } = "http://localhost:8885/i3x/v1";
     [JsonPropertyName("authScheme")] public string AuthScheme { get; set; } = "None";
     [JsonPropertyName("apiKeyHeader")] public string ApiKeyHeader { get; set; } = "X-API-Key";
-    [JsonPropertyName("typeFilter")] public string TypeFilter { get; set; } = "type:Locations";
+    [JsonPropertyName("typeFilter")] public string TypeFilter { get; set; } = "type:Location";
 
     // Write Command panel
     [JsonPropertyName("writeElementId")] public string WriteElementId { get; set; } = "";

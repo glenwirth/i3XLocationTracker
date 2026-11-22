@@ -79,7 +79,7 @@ app.MapGet("/api/stream", async (string[] id, HttpContext context) =>
     string subscriptionId;
     try
     {
-        subscriptionId = await client.CreateSubscriptionAsync(clientId, "I3X Locations Tracker (Web)", ct);
+        subscriptionId = await client.CreateSubscriptionAsync(clientId, "I3X Location Tracker (Web)", ct);
         await client.RegisterElementsAsync(clientId, subscriptionId, id, maxDepth: 1, ct);
     }
     catch (Exception ex) when (!ct.IsCancellationRequested)
@@ -150,7 +150,7 @@ static async Task<IResult> CallI3x(Func<I3xClient, Task<IResult>> call)
 
 static IEnumerable<StreamUpdate> ToStreamUpdates(SubscriptionUpdate update)
 {
-    var readings = LocationsReading.ParseFrom(update.Value);
+    var readings = LocationReading.ParseFrom(update.Value);
     if (readings.Count == 0)
         return new[] { new StreamUpdate(update.ElementId, Error: "no X/Y data") };
 

@@ -5,7 +5,11 @@
 $ErrorActionPreference = 'Stop'
 
 $serviceName = 'I3XLocationTrackerWeb'
-$installDir = Join-Path $env:ProgramFiles 'I3X Locations Tracker Web'
+$installDirs = @(
+    (Join-Path $env:ProgramFiles 'I3X Location Tracker Web'),
+    # Folder name used before "Locations" was renamed to "Location".
+    (Join-Path $env:ProgramFiles 'I3X Locations Tracker Web')
+)
 
 $existing = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
 if ($existing) {
@@ -17,8 +21,8 @@ if ($existing) {
     if ($LASTEXITCODE -ne 0) { throw "sc.exe delete failed with exit code $LASTEXITCODE" }
 }
 
-if (Test-Path $installDir) {
-    Remove-Item -LiteralPath $installDir -Recurse -Force
+foreach ($dir in $installDirs) {
+    if (Test-Path $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
 }
 
 Write-Host 'Service removed.'

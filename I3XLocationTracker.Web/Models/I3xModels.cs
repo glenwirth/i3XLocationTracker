@@ -149,10 +149,10 @@ public sealed class DeleteSubscriptionsRequest
 }
 
 /// <summary>
-/// One reading from a "Locations" typed object's current value, whose fields are all at the top level,
+/// One reading from a "Location" typed object's current value, whose fields are all at the top level,
 /// e.g. {"Timestamp":..,"X":..,"Y":..,"Z":..,"Battery":..,"IsMoving":..,"Product":"NONE"}
 /// </summary>
-public sealed class LocationsReading
+public sealed class LocationReading
 {
     public DateTime TimestampUtc { get; set; }
     public double X { get; set; }
@@ -163,16 +163,16 @@ public sealed class LocationsReading
     public string? Product { get; set; }
 
     /// <summary>Returns the value's single reading, or an empty list if it has no numeric X and Y.</summary>
-    public static List<LocationsReading> ParseFrom(JsonElement value)
+    public static List<LocationReading> ParseFrom(JsonElement value)
     {
-        var readings = new List<LocationsReading>();
+        var readings = new List<LocationReading>();
         if (value.ValueKind != JsonValueKind.Object) return readings;
 
         var x = GetNumber(value, "X");
         var y = GetNumber(value, "Y");
         if (x == null || y == null) return readings;
 
-        var reading = new LocationsReading
+        var reading = new LocationReading
         {
             X = x.Value,
             Y = y.Value,

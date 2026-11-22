@@ -1,6 +1,6 @@
-# i3X Locations Tracker
+# i3X Location Tracker
 
-A browser app (ASP.NET Core, .NET 8, Windows) that connects to an [i3X](https://github.com/cesmii/i3X) server, discovers every object whose type is `Locations`, and plots their live X/Y trajectory in real time. There's no polling: it's driven entirely by the i3X push-subscription (SSE) API. It can also send commands to any object.
+A browser app (ASP.NET Core, .NET 8, Windows) that connects to an [i3X](https://github.com/cesmii/i3X) server, discovers every object whose type is `Location`, and plots their live X/Y trajectory in real time. There's no polling: it's driven entirely by the i3X push-subscription (SSE) API. It can also send commands to any object.
 
 Built for tracking things like AMRs (autonomous mobile robots) that report `{ Timestamp, X, Y, Z, Battery, IsMoving, Product }` readings.
 
@@ -8,7 +8,7 @@ Built with Claude Code; the [i3x-mcp](https://www.npmjs.com/package/i3x-mcp) MCP
 
 See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this app was designed and built in. It started as a Windows desktop (WPF) app, which was later replaced by this browser version.
 
-![i3X Locations Tracker in a browser, streaming AMR1, AMR2 and AMR4 live after sending a GO/BLUE command to AMR4](screenshot-web.png)
+![i3X Location Tracker in a browser, streaming AMR1, AMR2 and AMR4 live after sending a GO/BLUE command to AMR4](screenshot-web.png)
 
 ---
 
@@ -30,7 +30,7 @@ To keep the app running without a logged-in user, run this from an **administrat
 powershell -ExecutionPolicy Bypass -File .\I3XLocationTracker.Web\install-service.ps1
 ```
 
-It builds the app, installs it to `C:\Program Files\I3X Locations Tracker Web`, and registers the `I3XLocationTrackerWeb` service to start with Windows and restart on failure.
+It builds the app, installs it to `C:\Program Files\I3X Location Tracker Web`, and registers the `I3XLocationTrackerWeb` service to start with Windows and restart on failure.
 
 The service runs as the low-privilege LocalService account, so it keeps its own settings and token, separate from yours. The first time, open the page, set Auth to Bearer, enter the token and click **Connect**. Port 5085 must be free, so stop any copy started with `dotnet run` first.
 
@@ -39,7 +39,7 @@ To remove it, run `uninstall-service.ps1` the same way.
 ## Using the app
 
 1. **i3X Connection**: enter the i3X base URL, pick an auth scheme, and (if needed) the token/key. Click **Connect**.
-2. **Locations Objects**: adjust the type filter if needed (default `type:Locations`), then click **Discover**.
+2. **Location Objects**: adjust the type filter if needed (default `type:Location`), then click **Discover**.
 3. Click **Start Tracking** to open the subscription and begin streaming. The table and trajectory chart update live.
 4. Uncheck an object's **Track** box to hide its line on the chart without stopping its data.
 5. Click **Stop Tracking** to end the subscription cleanly.
@@ -57,7 +57,7 @@ Settings are remembered automatically, so there's nothing to save manually.
 - `Connect` validates the server via `GET /info` and reports its name and spec version.
 
 ### Discovery
-- `Discover` calls `GET /objects` filtered by a configurable **type filter** (default `type:Locations`) to find every matching object.
+- `Discover` calls `GET /objects` filtered by a configurable **type filter** (default `type:Location`) to find every matching object.
 - Falls back to an unfiltered `GET /objects` + filtering in the app if the server doesn't support the query-param filter.
 - Each discovered object gets its own color, used consistently in the chart line, its marker and the legend.
 
@@ -133,7 +133,7 @@ I3XLocationTracker/
 │   │   ├── I3xClient.cs         HTTP client for the i3X REST API (info, objects, writes, subscriptions, SSE stream)
 │   │   └── SettingsService.cs   Loads/saves settings.json; DPAPI-encrypts the token
 │   ├── Models/
-│   │   ├── I3xModels.cs         i3X request/response shapes + Locations reading parsing
+│   │   ├── I3xModels.cs         i3X request/response shapes + Location reading parsing
 │   │   └── AppSettings.cs       Saved settings shape
 │   ├── wwwroot/                 Page, styles, and the UI and trajectory chart script (app.js)
 │   └── install-service.ps1 / uninstall-service.ps1   Add or remove the Windows service
@@ -154,7 +154,7 @@ I3XLocationTracker/
 
 ### Expected object shape
 
-Objects of type `Locations` are expected to expose a current value shaped like:
+Objects of type `Location` are expected to expose a current value shaped like:
 ```json
 {
   "Timestamp": 1794143297862,
