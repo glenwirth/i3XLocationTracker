@@ -8,7 +8,7 @@ Built with Claude Code; the [i3x-mcp](https://www.npmjs.com/package/i3x-mcp) MCP
 
 See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this app was designed and built in. It started as a Windows desktop (WPF) app, which was later replaced by this browser version.
 
-![i3X Location Tracker in a browser, streaming AMR1, AMR2 and AMR4 live after sending a GO/BLUE command to AMR4](screenshot-web.png)
+![i3X Location Tracker in a browser, streaming AMR1 to AMR4 live after sending a STOP command to AMR3](screenshot-web.png)
 
 ---
 
