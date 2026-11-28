@@ -74,6 +74,7 @@ Settings are remembered automatically, so there's nothing to save manually.
 - A **star marker** shows each object's current position, labelled with its name when four or fewer objects are shown.
 - Hover over the chart (or tap it on a phone) to see the nearest point's object, X, Y and time.
 - The **Track** checkboxes in the table show or hide an object's line without dropping its subscription.
+- **Clear History** erases the trails without stopping tracking. Each object keeps its current-position star, and new trails start from there.
 - Axes autoscale to the live data range. The chart is drawn on a canvas with no outside libraries, using a color palette checked for colorblind separation and contrast on the dark background.
 
 ### Live data table

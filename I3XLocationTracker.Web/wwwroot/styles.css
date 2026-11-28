@@ -135,6 +135,7 @@ tbody tr.selected { background: var(--selection); }
   padding: 8px 12px 0;
 }
 .chart-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+#clearHistory { margin-left: auto; }
 
 .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
@@ -183,4 +184,5 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
   .chart-panel { min-height: 360px; }
   .chart-head { padding: 8px 8px 0; }
+  #clearHistory { flex: 0 0 auto; }
 }

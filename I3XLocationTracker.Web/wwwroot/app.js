@@ -81,6 +81,19 @@ function updateButtons() {
   $("start").disabled = !state.connected || state.tracking || state.objects.length === 0;
   $("stop").disabled = !state.tracking;
   $("send").disabled = !state.connected || !$("writeElementId").value.trim() || !$("writePayload").value.trim();
+  $("clearHistory").disabled = !state.objects.some(o => o.points.length > 1);
+}
+
+// Erases each trail but keeps its latest point, so every object's current-position star stays on the chart.
+function clearHistory() {
+  for (const obj of state.objects) {
+    const latest = obj.points.at(-1);
+    obj.points = latest ? [latest] : [];
+    obj.seenTimestamps = new Set(latest ? [latest.t] : []);
+  }
+  pointer = null;
+  updateButtons();
+  requestDraw();
 }
 
 function clearObjects() {
@@ -241,7 +254,10 @@ function startTracking() {
   source.addEventListener("update", event => {
     let changed = false;
     for (const update of JSON.parse(event.data)) changed = applyUpdate(update) || changed;
-    if (changed) requestDraw();
+    if (changed) {
+      requestDraw();
+      updateButtons();
+    }
   });
   source.onerror = () => {
     if (source.readyState === EventSource.CLOSED) {
@@ -584,6 +600,7 @@ $("start").addEventListener("click", startTracking);
 $("stop").addEventListener("click", stopTracking);
 $("refreshTargets").addEventListener("click", loadWriteTargets);
 $("send").addEventListener("click", sendCommand);
+$("clearHistory").addEventListener("click", clearHistory);
 
 for (const id of ["baseUrl", "authScheme", "token", "apiKeyHeader", "typeFilter"]) {
   $(id).addEventListener("input", scheduleSave);
