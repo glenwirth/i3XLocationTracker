@@ -154,3 +154,33 @@ canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
   white-space: nowrap;
 }
 .tooltip strong { display: block; font-weight: 600; }
+
+/* ----- Phones and narrow windows ----- */
+@media (max-width: 700px) {
+  .app { gap: 6px; padding: 6px; }
+  .row { gap: 8px; }
+
+  /* Each field takes the full width, with its input stretching to fill it. */
+  .row label { flex: 1 1 100%; min-width: 0; }
+  .row label > input, .row label > select { flex: 1; width: auto; min-width: 0; }
+  label:has(#writeTarget) { flex-basis: calc(100% - 60px); }
+  label:has(#writeCommand), label:has(#writeColor) { flex-basis: 40%; }
+
+  /* Bigger tap targets; 16px text stops iPhones zooming in when a field is tapped. */
+  input, select, button { height: 40px; font-size: 16px; }
+  button { flex: 1 1 auto; }
+  #refreshTargets { flex: 0 0 48px; }
+  #writeStatus { flex: 1 1 100%; }
+
+  /* Keep the table to what fits: hide Element Id, Moving and Last Update. */
+  .table-wrap { height: auto; max-height: 260px; }
+  th:nth-child(3), td:nth-child(3),
+  th:nth-child(8), td:nth-child(8),
+  th:nth-child(9), td:nth-child(9) { display: none; }
+  td { padding: 6px; }
+  /* Long names and statuses wrap instead of forcing the table wider than the screen. */
+  td:nth-child(2), td:nth-child(10) { white-space: normal; }
+
+  .chart-panel { min-height: 360px; }
+  .chart-head { padding: 8px 8px 0; }
+}

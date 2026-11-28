@@ -165,7 +165,8 @@ function addObject(info, index) {
     requestDraw();
   });
   cell().append(checkbox);
-  cell().textContent = obj.name;
+  // Allow line breaks after underscores so long names like Location_Lego_Instance can wrap on phones.
+  cell().textContent = obj.name.replace(/_/g, "_\u200b");
   cell().textContent = obj.elementId;
 
   obj.cells = {
@@ -332,18 +333,23 @@ async function sendCommand() {
 
 const canvas = $("chart");
 const context = canvas.getContext("2d");
-const MARGIN = { left: 72, right: 24, top: 14, bottom: 46 };
+// Tighter margins on phones so the plot keeps most of the width.
+const WIDE_MARGIN = { left: 72, right: 24, top: 14, bottom: 46 };
+const NARROW_MARGIN = { left: 46, right: 12, top: 12, bottom: 44 };
+const NARROW_WIDTH = 500;
 const GRID_COLOR = "#3a3a3d";
 const SURFACE_COLOR = "#252526";
 const TEXT_COLOR = "#dcdcdc";
 const MUTED_COLOR = "#9aa0a6";
 const HOVER_RADIUS = 24;
+const TOUCH_RADIUS = 36; // fingers are less precise than a mouse
 const LABEL_LIMIT = 4;
 const LABEL_LINE_HEIGHT = 15;
 
 let drawPending = false;
 let plot = null;
 let pointer = null;
+let margin = WIDE_MARGIN;
 
 function requestDraw() {
   if (drawPending) return;
@@ -400,23 +406,24 @@ function draw() {
   }
   context.setTransform(dpr, 0, 0, dpr, 0, 0);
   context.clearRect(0, 0, width, height);
+  margin = width < NARROW_WIDTH ? NARROW_MARGIN : WIDE_MARGIN;
 
   state.objects.forEach(trimOldPoints);
   const visible = state.objects.filter(o => o.tracked && o.points.length > 0);
 
   const [xMin, xMax] = axisRange(visible.flatMap(o => o.points.map(p => p.x)));
   const [yMin, yMax] = axisRange(visible.flatMap(o => o.points.map(p => p.y)));
-  const plotWidth = Math.max(width - MARGIN.left - MARGIN.right, 1);
-  const plotHeight = Math.max(height - MARGIN.top - MARGIN.bottom, 1);
-  const toX = x => MARGIN.left + (x - xMin) / (xMax - xMin) * plotWidth;
-  const toY = y => MARGIN.top + plotHeight - (y - yMin) / (yMax - yMin) * plotHeight;
+  const plotWidth = Math.max(width - margin.left - margin.right, 1);
+  const plotHeight = Math.max(height - margin.top - margin.bottom, 1);
+  const toX = x => margin.left + (x - xMin) / (xMax - xMin) * plotWidth;
+  const toY = y => margin.top + plotHeight - (y - yMin) / (yMax - yMin) * plotHeight;
   plot = { visible, toX, toY };
 
   drawAxes(xMin, xMax, yMin, yMax, plotWidth, plotHeight, toX, toY);
 
   context.save();
   context.beginPath();
-  context.rect(MARGIN.left, MARGIN.top, plotWidth, plotHeight);
+  context.rect(margin.left, margin.top, plotWidth, plotHeight);
   context.clip();
   for (const obj of visible) {
     context.beginPath();
@@ -471,15 +478,15 @@ function drawAxes(xMin, xMax, yMin, yMax, plotWidth, plotHeight, toX, toY) {
   context.strokeStyle = GRID_COLOR;
   context.fillStyle = MUTED_COLOR;
 
-  const bottom = MARGIN.top + plotHeight;
-  const right = MARGIN.left + plotWidth;
+  const bottom = margin.top + plotHeight;
+  const right = margin.left + plotWidth;
 
   context.textAlign = "center";
   context.textBaseline = "top";
   for (const tick of niceTicks(xMin, xMax, Math.max(Math.floor(plotWidth / 90), 2))) {
     const x = Math.round(toX(tick)) + 0.5;
     context.beginPath();
-    context.moveTo(x, MARGIN.top);
+    context.moveTo(x, margin.top);
     context.lineTo(x, bottom);
     context.stroke();
     context.fillText(tick.toLocaleString(), x, bottom + 6);
@@ -490,18 +497,18 @@ function drawAxes(xMin, xMax, yMin, yMax, plotWidth, plotHeight, toX, toY) {
   for (const tick of niceTicks(yMin, yMax, Math.max(Math.floor(plotHeight / 50), 2))) {
     const y = Math.round(toY(tick)) + 0.5;
     context.beginPath();
-    context.moveTo(MARGIN.left, y);
+    context.moveTo(margin.left, y);
     context.lineTo(right, y);
     context.stroke();
-    context.fillText(tick.toLocaleString(), MARGIN.left - 8, y);
+    context.fillText(tick.toLocaleString(), margin.left - 8, y);
   }
 
   context.fillStyle = TEXT_COLOR;
   context.textAlign = "center";
   context.textBaseline = "alphabetic";
-  context.fillText("X", MARGIN.left + plotWidth / 2, bottom + 38);
+  context.fillText("X", margin.left + plotWidth / 2, bottom + 38);
   context.save();
-  context.translate(16, MARGIN.top + plotHeight / 2);
+  context.translate(16, margin.top + plotHeight / 2);
   context.rotate(-Math.PI / 2);
   context.fillText("Y", 0, 0);
   context.restore();
@@ -511,7 +518,8 @@ function updateTooltip() {
   const tooltip = $("tooltip");
   let nearest = null;
   if (pointer && plot) {
-    let bestDistance = HOVER_RADIUS * HOVER_RADIUS;
+    const radius = pointer.touch ? TOUCH_RADIUS : HOVER_RADIUS;
+    let bestDistance = radius * radius;
     for (const obj of plot.visible) {
       for (const point of obj.points) {
         const dx = plot.toX(point.x) - pointer.x;
@@ -593,12 +601,16 @@ $("writeElementId").addEventListener("input", () => {
 });
 $("writePayload").addEventListener("input", updateButtons);
 
-canvas.addEventListener("mousemove", event => {
+// Mouse: details follow the pointer. Touch: tap a point to see its details; tap empty space to hide them.
+function setPointer(event) {
   const rect = canvas.getBoundingClientRect();
-  pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  pointer = { x: event.clientX - rect.left, y: event.clientY - rect.top, touch: event.pointerType !== "mouse" };
   requestDraw();
-});
-canvas.addEventListener("mouseleave", () => {
+}
+canvas.addEventListener("pointermove", event => { if (event.pointerType === "mouse") setPointer(event); });
+canvas.addEventListener("pointerdown", setPointer);
+canvas.addEventListener("pointerleave", event => {
+  if (event.pointerType !== "mouse") return;
   pointer = null;
   requestDraw();
 });

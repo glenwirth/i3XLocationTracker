@@ -18,7 +18,7 @@ See [Chat-Transcript.pdf](Chat-Transcript.pdf) for the full conversation this ap
 dotnet run --project I3XLocationTracker.Web
 ```
 
-Then open <http://localhost:5085>, or `http://<this-computer's-IP>:5085` from another computer. Windows Firewall must allow inbound TCP port 5085.
+Then open <http://localhost:5085>, or `http://<this-computer's-IP>:5085` from another computer or a phone on the same network. Windows Firewall must allow inbound TCP port 5085.
 
 > **This is a test program.** It is open to the whole network over plain HTTP with no login. Anyone who can reach port 5085 can change the connection settings and use **Write Command to move physical robots**, so only run it on a network you trust.
 
@@ -72,7 +72,7 @@ Settings are remembered automatically, so there's nothing to save manually.
 ### Trajectory chart
 - A single X/Y plot, **X on the horizontal axis, Y on the vertical axis**, showing each tracked object's path as a line with small dots along the trail. It keeps a 10-minute rolling window and trims older points automatically.
 - A **star marker** shows each object's current position, labelled with its name when four or fewer objects are shown.
-- Hover over the chart to see the nearest point's object, X, Y and time.
+- Hover over the chart (or tap it on a phone) to see the nearest point's object, X, Y and time.
 - The **Track** checkboxes in the table show or hide an object's line without dropping its subscription.
 - Axes autoscale to the live data range. The chart is drawn on a canvas with no outside libraries, using a color palette checked for colorblind separation and contrast on the dark background.
 
@@ -85,6 +85,9 @@ The **Write Command** panel sends a JSON payload to any object, addressed by its
 - **Command** (`GO` / `STOP`) and **Color** (`NONE` / `BLUE` / `RED`) generate the payload, e.g. `{"Command":"GO","Color":"BLUE"}`. The **Payload** box is editable, so any valid JSON can be sent.
 - **Send** writes the payload as the object's new current value (quality `Good`, current timestamp) and shows success or the server's error under the panel.
 - The target Element Id, command and color are remembered with the other settings.
+
+### Works on phones
+On a phone or narrow window the page rearranges itself: fields stack full-width with larger tap targets, and the table keeps Track, Name, X, Y, Product, Battery and Status, hiding Element Id, Moving and Last Update. The chart fills the width; tap a point to see its details and tap empty space to hide them.
 
 ### Settings and token
 Every connection field (Base URL, auth scheme, API key header, type filter, and the token/key itself) and the Write Command choices are saved automatically to:
