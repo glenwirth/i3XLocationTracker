@@ -101,6 +101,34 @@ function clearObjects() {
   state.byId = new Map();
   state.selectedRow = null;
   $("objects").replaceChildren();
+  syncTrackAll();
+  renderLegend();
+  requestDraw();
+}
+
+function setTracked(obj, tracked) {
+  obj.tracked = tracked;
+  obj.checkbox.checked = tracked;
+  syncTrackAll();
+  renderLegend();
+  requestDraw();
+}
+
+// The header checkbox is checked when every object is shown, empty when none are, and dashed in between.
+function syncTrackAll() {
+  const all = $("trackAll");
+  const shown = state.objects.filter(o => o.tracked).length;
+  all.disabled = state.objects.length === 0;
+  all.checked = shown > 0 && shown === state.objects.length;
+  all.indeterminate = shown > 0 && shown < state.objects.length;
+}
+
+function setAllTracked(tracked) {
+  for (const obj of state.objects) {
+    obj.tracked = tracked;
+    obj.checkbox.checked = tracked;
+  }
+  syncTrackAll();
   renderLegend();
   requestDraw();
 }
@@ -135,6 +163,7 @@ async function discover() {
     found
       .sort((a, b) => (a.displayName ?? a.elementId).localeCompare(b.displayName ?? b.elementId))
       .forEach((info, index) => addObject(info, index));
+    syncTrackAll();
     renderLegend();
     requestDraw();
 
@@ -172,11 +201,8 @@ function addObject(info, index) {
   checkbox.checked = true;
   checkbox.setAttribute("aria-label", `Show ${obj.name} on the chart`);
   checkbox.addEventListener("click", event => event.stopPropagation());
-  checkbox.addEventListener("change", () => {
-    obj.tracked = checkbox.checked;
-    renderLegend();
-    requestDraw();
-  });
+  checkbox.addEventListener("change", () => setTracked(obj, checkbox.checked));
+  obj.checkbox = checkbox;
   cell().append(checkbox);
   // Allow line breaks after underscores so long names like Location_Lego_Instance can wrap on phones.
   cell().textContent = obj.name.replace(/_/g, "_\u200b");
@@ -601,6 +627,8 @@ $("stop").addEventListener("click", stopTracking);
 $("refreshTargets").addEventListener("click", loadWriteTargets);
 $("send").addEventListener("click", sendCommand);
 $("clearHistory").addEventListener("click", clearHistory);
+// A partly checked box turns everything on first, the usual select-all behavior.
+$("trackAll").addEventListener("change", () => setAllTracked($("trackAll").checked));
 
 for (const id of ["baseUrl", "authScheme", "token", "apiKeyHeader", "typeFilter"]) {
   $(id).addEventListener("input", scheduleSave);

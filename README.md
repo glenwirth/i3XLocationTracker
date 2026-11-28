@@ -41,7 +41,7 @@ To remove it, run `uninstall-service.ps1` the same way.
 1. **i3X Connection**: enter the i3X base URL, pick an auth scheme, and (if needed) the token/key. Click **Connect**.
 2. **Location Objects**: adjust the type filter if needed (default `type:Location`), then click **Discover**.
 3. Click **Start Tracking** to open the subscription and begin streaming. The table and trajectory chart update live.
-4. Uncheck an object's **Track** box to hide its line on the chart without stopping its data.
+4. Uncheck an object's box in the first column to hide its line on the chart without stopping its data. The box in the column header shows or hides all of them at once.
 5. Click **Stop Tracking** to end the subscription cleanly.
 6. To command an object, pick it in the **Write Command** panel (or click its row), choose Command and Color, and click **Send**.
 
@@ -73,7 +73,7 @@ Settings are remembered automatically, so there's nothing to save manually.
 - A single X/Y plot, **X on the horizontal axis, Y on the vertical axis**, showing each tracked object's path as a line with small dots along the trail. It keeps a 10-minute rolling window and trims older points automatically.
 - A **star marker** shows each object's current position, labelled with its name when four or fewer objects are shown.
 - Hover over the chart (or tap it on a phone) to see the nearest point's object, X, Y and time.
-- The **Track** checkboxes in the table show or hide an object's line without dropping its subscription.
+- The checkboxes in the table's first column show or hide an object's line without dropping its subscription. The header checkbox selects all or none, and shows a dash when only some are selected.
 - **Clear History** erases the trails without stopping tracking. Each object keeps its current-position star, and new trails start from there.
 - Axes autoscale to the live data range. The chart is drawn on a canvas with no outside libraries, using a color palette checked for colorblind separation and contrast on the dark background.
 
@@ -88,7 +88,7 @@ The **Write Command** panel sends a JSON payload to any object, addressed by its
 - The target Element Id, command and color are remembered with the other settings.
 
 ### Works on phones
-On a phone or narrow window the page rearranges itself: fields stack full-width with larger tap targets, and the table keeps Track, Name, X, Y, Product, Battery and Status, hiding Element Id, Moving and Last Update. The chart fills the width; tap a point to see its details and tap empty space to hide them.
+On a phone or narrow window the page rearranges itself: fields stack full-width with larger tap targets, and the table keeps the checkboxes, Name, X, Y, Product, Battery and Status, hiding Element Id, Moving and Last Update. The chart fills the width; tap a point to see its details and tap empty space to hide them.
 
 ### Settings and token
 Every connection field (Base URL, auth scheme, API key header, type filter, and the token/key itself) and the Write Command choices are saved automatically to:
